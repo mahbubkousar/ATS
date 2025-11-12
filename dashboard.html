@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ResumeSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body class="dashboard-body">
+    <nav class="floating-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo" style="text-decoration: none;">ResumeSync</a>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="score-checker.html" class="nav-link">ATS Checker</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="editor.html" class="nav-cta" style="text-decoration: none; display: inline-block; text-align: center;">Create Resume</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h2 class="sidebar-title">Dashboard Menu</h2>
+            <nav class="sidebar-nav">
+                <a href="#overview" class="sidebar-link active">
+                    <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 4C3 3.44772 3.44772 3 4 3H7C7.55228 3 8 3.44772 8 4V7C8 7.55228 7.55228 8 7 8H4C3.44772 8 3 7.55228 3 7V4Z" fill="currentColor"/>
+                        <path d="M3 13C3 12.4477 3.44772 12 4 12H7C7.55228 12 8 12.4477 8 13V16C8 16.5523 7.55228 17 7 17H4C3.44772 17 3 16.5523 3 16V13Z" fill="currentColor"/>
+                        <path d="M13 3C12.4477 3 12 3.44772 12 4V7C12 7.55228 12.4477 8 13 8H16C16.5523 8 17 7.55228 17 7V4C17 3.44772 16.5523 3 16 3H13Z" fill="currentColor"/>
+                        <path d="M12 13C12 12.4477 12.4477 12 13 12H16C16.5523 12 17 12.4477 17 13V16C17 16.5523 16.5523 17 16 17H13C12.4477 17 12 16.5523 12 16V13Z" fill="currentColor"/>
+                    </svg>
+                    <span>Overview</span>
+                </a>
+                <a href="#resumes" class="sidebar-link">
+                    <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M4 4C4 2.89543 4.89543 2 6 2H14C15.1046 2 16 2.89543 16 4V16C16 17.1046 15.1046 18 14 18H6C4.89543 18 4 17.1046 4 16V4Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M7 7H13M7 10H13M7 13H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>My Resumes</span>
+                </a>
+                <a href="#templates" class="sidebar-link">
+                    <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5C3 3.89543 3.89543 3 5 3H15C16.1046 3 17 3.89543 17 5V15C17 16.1046 16.1046 17 15 17H5C3.89543 17 3 16.1046 3 15V5Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M7 7H13M7 10H13M7 13H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Templates</span>
+                </a>
+                <a href="#analytics" class="sidebar-link">
+                    <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 17V13M10 17V7M17 17V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Analytics</span>
+                </a>
+                <a href="#profile" class="sidebar-link">
+                    <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                        <path d="M3 18C3 14.134 6.13401 11 10 11C13.866 11 17 14.134 17 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Profile</span>
+                </a>
+                <a href="#settings" class="sidebar-link">
+                    <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 6V10L13 13M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <header class="dashboard-header">
+                    <h1 class="dashboard-greeting">Welcome back, User!</h1>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Resumes Created</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">Avg ATS Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Applications Sent</div>
+                    </div>
+                </div>
+
+                <section class="recent-resumes">
+                    <h2 class="section-heading">Recent Resumes</h2>
+                    <div class="resume-grid">
+                        <div class="resume-card">
+                            <h3 class="resume-title">Software Engineer Resume</h3>
+                            <p class="resume-meta">Last edited: 2 days ago</p>
+                            <p class="resume-score">ATS Score: <span class="score-value">95%</span></p>
+                            <div class="resume-actions">
+                                <a href="editor.html" class="btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button class="btn-secondary btn-download">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                                <button class="btn-secondary btn-share">
+                                    <i class="fas fa-share-alt"></i> Share
+                                </button>
+                            </div>
+                        </div>
+                        <div class="resume-card">
+                            <h3 class="resume-title">Data Analyst Resume</h3>
+                            <p class="resume-meta">Last edited: 1 week ago</p>
+                            <p class="resume-score">ATS Score: <span class="score-value">87%</span></p>
+                            <div class="resume-actions">
+                                <a href="editor.html" class="btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button class="btn-secondary btn-download">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                                <button class="btn-secondary btn-share">
+                                    <i class="fas fa-share-alt"></i> Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="editor.html" class="btn-create-resume" id="createResumeBtn" style="text-decoration: none; display: inline-block;">
+                        + Create New Resume
+                    </a>
+                </section>
+            </div>
+
+            <!-- My Resumes Tab -->
+            <div id="resumes" class="tab-content">
+                <header class="dashboard-header">
+                    <h1 class="dashboard-greeting">My Resumes</h1>
+                </header>
+
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search resumes..." class="search-input">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="recent">Recent</button>
+                        <button class="filter-btn" data-filter="high-score">High Score</button>
+                    </div>
+                </div>
+
+                <div class="resume-grid">
+                    <div class="resume-card">
+                        <h3 class="resume-title">Software Engineer Resume</h3>
+                        <p class="resume-meta">Last edited: 2 days ago</p>
+                        <p class="resume-score">ATS Score: <span class="score-value">95%</span></p>
+                        <div class="resume-actions">
+                            <a href="editor.html" class="btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button class="btn-secondary btn-download">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn-secondary btn-share">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                            <button class="btn-secondary btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="resume-card">
+                        <h3 class="resume-title">Data Analyst Resume</h3>
+                        <p class="resume-meta">Last edited: 1 week ago</p>
+                        <p class="resume-score">ATS Score: <span class="score-value">87%</span></p>
+                        <div class="resume-actions">
+                            <a href="editor.html" class="btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button class="btn-secondary btn-download">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn-secondary btn-share">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                            <button class="btn-secondary btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="resume-card">
+                        <h3 class="resume-title">Product Manager Resume</h3>
+                        <p class="resume-meta">Last edited: 2 weeks ago</p>
+                        <p class="resume-score">ATS Score: <span class="score-value">92%</span></p>
+                        <div class="resume-actions">
+                            <a href="editor.html" class="btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button class="btn-secondary btn-download">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn-secondary btn-share">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                            <button class="btn-secondary btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="resume-card">
+                        <h3 class="resume-title">Marketing Specialist Resume</h3>
+                        <p class="resume-meta">Last edited: 3 weeks ago</p>
+                        <p class="resume-score">ATS Score: <span class="score-value">79%</span></p>
+                        <div class="resume-actions">
+                            <a href="editor.html" class="btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button class="btn-secondary btn-download">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn-secondary btn-share">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                            <button class="btn-secondary btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="resume-card">
+                        <h3 class="resume-title">UX Designer Resume</h3>
+                        <p class="resume-meta">Last edited: 1 month ago</p>
+                        <p class="resume-score">ATS Score: <span class="score-value">88%</span></p>
+                        <div class="resume-actions">
+                            <a href="editor.html" class="btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button class="btn-secondary btn-download">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn-secondary btn-share">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                            <button class="btn-secondary btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <a href="editor.html" class="btn-create-resume" style="text-decoration: none; display: inline-block;">
+                    + Create New Resume
+                </a>
+            </div>
+
+            <!-- Templates Tab -->
+            <div id="templates" class="tab-content">
+                <header class="dashboard-header">
+                    <h1 class="dashboard-greeting">Resume Templates</h1>
+                    <p class="section-description">Choose from professional, ATS-optimized templates</p>
+                </header>
+
+                <div class="templates-grid">
+                    <div class="template-card">
+                        <div class="template-preview">
+                            <div class="template-preview-content">
+                                <div class="template-line"></div>
+                                <div class="template-line short"></div>
+                                <div class="template-line"></div>
+                                <div class="template-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="template-info">
+                            <h3 class="template-name">Professional</h3>
+                            <p class="template-description">Clean and modern design perfect for corporate roles</p>
+                            <button class="btn-use-template">Use Template</button>
+                        </div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-preview">
+                            <div class="template-preview-content">
+                                <div class="template-line"></div>
+                                <div class="template-line short"></div>
+                                <div class="template-line"></div>
+                                <div class="template-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="template-info">
+                            <h3 class="template-name">Modern</h3>
+                            <p class="template-description">Contemporary layout with subtle accents</p>
+                            <button class="btn-use-template">Use Template</button>
+                        </div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-preview">
+                            <div class="template-preview-content">
+                                <div class="template-line"></div>
+                                <div class="template-line short"></div>
+                                <div class="template-line"></div>
+                                <div class="template-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="template-info">
+                            <h3 class="template-name">Minimal</h3>
+                            <p class="template-description">Simple and elegant, focuses on content</p>
+                            <button class="btn-use-template">Use Template</button>
+                        </div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-preview">
+                            <div class="template-preview-content">
+                                <div class="template-line"></div>
+                                <div class="template-line short"></div>
+                                <div class="template-line"></div>
+                                <div class="template-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="template-info">
+                            <h3 class="template-name">Executive</h3>
+                            <p class="template-description">Premium design for senior positions</p>
+                            <button class="btn-use-template">Use Template</button>
+                        </div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-preview">
+                            <div class="template-preview-content">
+                                <div class="template-line"></div>
+                                <div class="template-line short"></div>
+                                <div class="template-line"></div>
+                                <div class="template-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="template-info">
+                            <h3 class="template-name">Creative</h3>
+                            <p class="template-description">Stand out with unique formatting</p>
+                            <button class="btn-use-template">Use Template</button>
+                        </div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-preview">
+                            <div class="template-preview-content">
+                                <div class="template-line"></div>
+                                <div class="template-line short"></div>
+                                <div class="template-line"></div>
+                                <div class="template-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="template-info">
+                            <h3 class="template-name">Technical</h3>
+                            <p class="template-description">Optimized for IT and engineering roles</p>
+                            <button class="btn-use-template">Use Template</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics" class="tab-content">
+                <header class="dashboard-header">
+                    <h1 class="dashboard-greeting">Analytics & Insights</h1>
+                    <p class="section-description">Track your resume performance</p>
+                </header>
+
+                <div class="analytics-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-file-alt stat-icon"></i>
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Total Resumes</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chart-line stat-icon"></i>
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">Avg ATS Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-paper-plane stat-icon"></i>
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Applications</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-eye stat-icon"></i>
+                        <div class="stat-number">48</div>
+                        <div class="stat-label">Profile Views</div>
+                    </div>
+                </div>
+
+                <div class="analytics-charts">
+                    <div class="chart-card">
+                        <h3 class="chart-title">ATS Score Trend</h3>
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-area"></i>
+                            <p>Your ATS scores have improved by 15% this month</p>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Resume Performance</h3>
+                        <div class="performance-list">
+                            <div class="performance-item">
+                                <span class="performance-name">Software Engineer Resume</span>
+                                <div class="performance-bar">
+                                    <div class="performance-fill" style="width: 95%"></div>
+                                </div>
+                                <span class="performance-score">95%</span>
+                            </div>
+                            <div class="performance-item">
+                                <span class="performance-name">Product Manager Resume</span>
+                                <div class="performance-bar">
+                                    <div class="performance-fill" style="width: 92%"></div>
+                                </div>
+                                <span class="performance-score">92%</span>
+                            </div>
+                            <div class="performance-item">
+                                <span class="performance-name">UX Designer Resume</span>
+                                <div class="performance-bar">
+                                    <div class="performance-fill" style="width: 88%"></div>
+                                </div>
+                                <span class="performance-score">88%</span>
+                            </div>
+                            <div class="performance-item">
+                                <span class="performance-name">Data Analyst Resume</span>
+                                <div class="performance-bar">
+                                    <div class="performance-fill" style="width: 87%"></div>
+                                </div>
+                                <span class="performance-score">87%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profile" class="tab-content">
+                <header class="dashboard-header">
+                    <h1 class="dashboard-greeting">Your Profile</h1>
+                    <p class="section-description">Manage your personal information</p>
+                </header>
+
+                <div class="profile-sections">
+                    <!-- Personal Information -->
+                    <div class="profile-section-card">
+                        <div class="profile-section-header">
+                            <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
+                        </div>
+                        <div class="profile-avatar-section">
+                            <div class="profile-avatar-large">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <button class="btn-change-photo">Change Photo</button>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-input" id="profileFullname" value="John Doe" placeholder="Full name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" id="profileEmail" value="john.doe@example.com" placeholder="Email address">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-input" id="profilePhone" value="+1 (555) 123-4567" placeholder="Phone number">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" class="form-input" id="profileDob">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-input" id="profileAddress" value="123 Main St" placeholder="Street address">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-input" id="profileCity" value="San Francisco" placeholder="City">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">State/Province</label>
+                                <input type="text" class="form-input" id="profileState" value="CA" placeholder="State">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Zip Code</label>
+                                <input type="text" class="form-input" id="profileZipcode" value="94102" placeholder="Zip code">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Country</label>
+                                <input type="text" class="form-input" id="profileCountry" value="USA" placeholder="Country">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Professional Title</label>
+                            <input type="text" class="form-input" id="profileProfessionalTitle" value="Software Engineer" placeholder="Your current role">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Professional Summary</label>
+                            <textarea class="form-textarea" id="profileBio" rows="4" placeholder="Tell us about yourself...">Experienced software engineer with a passion for building scalable applications.</textarea>
+                        </div>
+                        <button class="btn-save-profile">Save Personal Info</button>
+                    </div>
+
+                    <!-- Education -->
+                    <div class="profile-section-card">
+                        <div class="profile-section-header">
+                            <h3><i class="fas fa-graduation-cap"></i> Education</h3>
+                            <button class="btn-add-section" onclick="addProfileEducation()">
+                                <i class="fas fa-plus"></i> Add Education
+                            </button>
+                        </div>
+                        <div id="profileEducationList" class="profile-entries-list">
+                            <!-- Education entries will be dynamically loaded -->
+                        </div>
+                    </div>
+
+                    <!-- Work Experience -->
+                    <div class="profile-section-card">
+                        <div class="profile-section-header">
+                            <h3><i class="fas fa-briefcase"></i> Work Experience</h3>
+                            <button class="btn-add-section" onclick="addProfileExperience()">
+                                <i class="fas fa-plus"></i> Add Experience
+                            </button>
+                        </div>
+                        <div id="profileExperienceList" class="profile-entries-list">
+                            <!-- Experience entries will be dynamically loaded -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <header class="dashboard-header">
+                    <h1 class="dashboard-greeting">Settings</h1>
+                    <p class="section-description">Manage your account preferences</p>
+                </header>
+
+                <div class="settings-sections">
+                    <div class="settings-card">
+                        <h3 class="settings-title">
+                            <i class="fas fa-bell"></i>
+                            Notifications
+                        </h3>
+                        <div class="settings-options">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-name">Email Notifications</span>
+                                    <span class="setting-description">Receive updates via email</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-name">Resume Tips</span>
+                                    <span class="setting-description">Get weekly tips to improve your resume</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-name">Application Updates</span>
+                                    <span class="setting-description">Track your application status</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3 class="settings-title">
+                            <i class="fas fa-lock"></i>
+                            Privacy & Security
+                        </h3>
+                        <div class="settings-options">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-name">Profile Visibility</span>
+                                    <span class="setting-description">Make your profile visible to recruiters</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-name">Two-Factor Authentication</span>
+                                    <span class="setting-description">Add extra security to your account</span>
+                                </div>
+                                <button class="btn-setting-action">Enable</button>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-name">Change Password</span>
+                                    <span class="setting-description">Update your password regularly</span>
+                                </div>
+                                <button class="btn-setting-action">Change</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3 class="settings-title">
+                            <i class="fas fa-palette"></i>
+                            Appearance
+                        </h3>
+                        <div class="settings-options">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-name">Dark Mode</span>
+                                    <span class="setting-description">Switch to dark theme</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card danger-zone">
+                        <h3 class="settings-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Danger Zone
+                        </h3>
+                        <div class="settings-options">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-name">Delete Account</span>
+                                    <span class="setting-description">Permanently delete your account and data</span>
+                                </div>
+                                <button class="btn-danger">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 ResumeSync. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
