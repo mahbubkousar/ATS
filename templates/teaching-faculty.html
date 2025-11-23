@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teaching-Focused Faculty CV Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Garamond', serif;
+            color: #1f2937;
+            line-height: 1.6;
+            background: white;
+        }
+
+        .cv-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 1in;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #374151;
+        }
+
+        .header h1 {
+            font-size: 22pt;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+
+        .header-subtitle {
+            font-size: 12pt;
+            color: #6b7280;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .contact-info {
+            font-size: 10.5pt;
+            color: #4b5563;
+            line-height: 1.8;
+        }
+
+        .contact-info div {
+            margin: 2px 0;
+        }
+
+        /* Teaching Philosophy Summary */
+        .philosophy-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px 18px;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .philosophy-text {
+            font-size: 10.5pt;
+            line-height: 1.7;
+            color: #78350f;
+            text-align: justify;
+        }
+
+        /* Section Headers */
+        .section {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #111827;
+            text-transform: uppercase;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 5px;
+            margin-bottom: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Education */
+        .education-entry {
+            margin-bottom: 16px;
+        }
+
+        .degree-line {
+            font-weight: 700;
+            font-size: 11pt;
+            margin-bottom: 3px;
+        }
+
+        .institution {
+            font-style: italic;
+            font-size: 11pt;
+            margin-bottom: 3px;
+        }
+
+        .date-info {
+            font-size: 10pt;
+            color: #6b7280;
+        }
+
+        /* Teaching Experience */
+        .teaching-role {
+            margin-bottom: 20px;
+        }
+
+        .role-title {
+            font-weight: 700;
+            font-size: 11.5pt;
+            color: #111827;
+        }
+
+        .role-institution {
+            font-size: 10.5pt;
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .role-dates {
+            font-size: 10pt;
+            color: #6b7280;
+            margin-top: 2px;
+            margin-bottom: 8px;
+        }
+
+        .courses-taught {
+            margin-top: 8px;
+            margin-left: 20px;
+        }
+
+        .course-category {
+            font-weight: 600;
+            font-size: 10.5pt;
+            margin-top: 6px;
+            margin-bottom: 4px;
+        }
+
+        .course-list {
+            font-size: 10pt;
+            color: #374151;
+            margin-left: 15px;
+        }
+
+        .course-item {
+            margin-bottom: 4px;
+        }
+
+        .course-number {
+            font-weight: 600;
+        }
+
+        .enrollment {
+            color: #6b7280;
+            font-size: 9.5pt;
+        }
+
+        /* Student Evaluations Box */
+        .evaluation-highlight {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-left: 3px solid #22c55e;
+            padding: 10px 15px;
+            margin: 10px 0 10px 20px;
+            font-size: 10pt;
+        }
+
+        .eval-score {
+            font-weight: 700;
+            color: #15803d;
+        }
+
+        /* Curriculum Development */
+        .curriculum-item {
+            margin-bottom: 14px;
+            margin-left: 15px;
+        }
+
+        .curriculum-title {
+            font-weight: 700;
+            font-size: 10.5pt;
+        }
+
+        .curriculum-details {
+            font-size: 10pt;
+            margin-top: 4px;
+            color: #374151;
+        }
+
+        /* Publications */
+        .publication {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            text-indent: -20px;
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+
+        /* Service */
+        .service-category {
+            margin-bottom: 14px;
+        }
+
+        .service-category-title {
+            font-weight: 700;
+            font-size: 10.5pt;
+            margin-bottom: 6px;
+        }
+
+        .service-item {
+            font-size: 10pt;
+            margin-bottom: 5px;
+            margin-left: 15px;
+        }
+
+        /* Awards */
+        .award-item {
+            margin-bottom: 12px;
+        }
+
+        .award-title {
+            font-weight: 700;
+            font-size: 10.5pt;
+        }
+
+        .award-details {
+            font-size: 10pt;
+            color: #4b5563;
+            margin-top: 2px;
+        }
+
+        /* Professional Development */
+        .dev-item {
+            margin-bottom: 8px;
+            font-size: 10pt;
+        }
+
+        .dev-title {
+            font-weight: 600;
+        }
+
+        /* References */
+        .reference {
+            margin-bottom: 16px;
+        }
+
+        .reference-name {
+            font-weight: 700;
+            font-size: 11pt;
+        }
+
+        .reference-title {
+            font-size: 10pt;
+            font-style: italic;
+        }
+
+        .reference-institution {
+            font-size: 10pt;
+        }
+
+        .reference-contact {
+            font-size: 9.5pt;
+            color: #6b7280;
+            margin-top: 3px;
+        }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .cv-container {
+                padding: 0.5in;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Dr. Jennifer Educator</h1>
+            <div class="header-subtitle">Dedicated Teacher-Scholar in English Literature</div>
+            <div class="contact-info">
+                <div>Department of English | Liberal Arts College</div>
+                <div>100 Academic Way, City, State 12345</div>
+                <div>jennifer.educator@college.edu | (555) 234-5678</div>
+                <div>Portfolio: jennifereducator.com/teaching</div>
+            </div>
+        </div>
+
+        <!-- Teaching Philosophy Summary -->
+        <div class="philosophy-box">
+            <div class="philosophy-text">
+                "I believe that effective teaching creates inclusive learning environments where students develop critical
+                thinking skills, confidence, and a lifelong love of literature. My pedagogy emphasizes active learning,
+                diverse voices, and connecting literary analysis to contemporary issues that resonate with students' lived experiences."
+            </div>
+        </div>
+
+        <!-- Education -->
+        <div class="section">
+            <div class="section-title">Education & Credentials</div>
+
+            <div class="education-entry">
+                <div class="degree-line">Ph.D., English Literature (19th Century British Literature)</div>
+                <div class="institution">University of California, Los Angeles</div>
+                <div class="date-info">2018 | Dissertation: "Victorian Women Writers and Social Reform"</div>
+            </div>
+
+            <div class="education-entry">
+                <div class="degree-line">M.A., English Literature</div>
+                <div class="institution">University of California, Los Angeles</div>
+                <div class="date-info">2014</div>
+            </div>
+
+            <div class="education-entry">
+                <div class="degree-line">B.A., English, <em>magna cum laude</em></div>
+                <div class="institution">Smith College</div>
+                <div class="date-info">2012</div>
+            </div>
+        </div>
+
+        <!-- Teaching Experience -->
+        <div class="section">
+            <div class="section-title">Teaching Experience</div>
+
+            <div class="teaching-role">
+                <div class="role-title">Assistant Professor of English</div>
+                <div class="role-institution">Liberal Arts College, Department of English</div>
+                <div class="role-dates">August 2020 - Present</div>
+
+                <div class="courses-taught">
+                    <div class="course-category">Courses Developed and Taught:</div>
+                    <div class="course-list">
+                        <div class="course-item">
+                            <span class="course-number">ENG 250:</span> Victorian Literature and Social Justice <span class="enrollment">(Avg. 22 students, 5 sections)</span>
+                        </div>
+                        <div class="course-item">
+                            <span class="course-number">ENG 340:</span> Women Writers in the 19th Century <span class="enrollment">(Avg. 18 students, 4 sections)</span>
+                        </div>
+                        <div class="course-item">
+                            <span class="course-number">ENG 101:</span> Introduction to Literary Analysis <span class="enrollment">(Avg. 24 students, 8 sections)</span>
+                        </div>
+                        <div class="course-item">
+                            <span class="course-number">ENG 490:</span> Senior Seminar in British Literature <span class="enrollment">(Avg. 12 students, 3 sections)</span>
+                        </div>
+                        <div class="course-item">
+                            <span class="course-number">WGST 220:</span> Feminist Literary Theory (Cross-listed) <span class="enrollment">(Avg. 20 students, 2 sections)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="evaluation-highlight">
+                    <strong>Student Evaluations:</strong> Average rating of <span class="eval-score">4.8/5.0</span> across all courses.
+                    Students consistently praise "engaging discussions," "accessible explanations of complex concepts," and
+                    "genuine care for student success." Selected student comment: <em>"Dr. Educator made Victorian literature
+                    relevant to our lives today. I never thought I'd love a 19th-century novel so much!"</em>
+                </div>
+            </div>
+
+            <div class="teaching-role">
+                <div class="role-title">Lecturer in English</div>
+                <div class="role-institution">University of California, Los Angeles</div>
+                <div class="role-dates">September 2018 - July 2020</div>
+
+                <div class="courses-taught">
+                    <div class="course-list">
+                        <div class="course-item">
+                            <span class="course-number">ENG 100:</span> Composition and Rhetoric (10 sections taught)
+                        </div>
+                        <div class="course-item">
+                            <span class="course-number">ENG 150:</span> Introduction to British Literature (6 sections taught)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="teaching-role">
+                <div class="role-title">Graduate Teaching Associate</div>
+                <div class="role-institution">University of California, Los Angeles</div>
+                <div class="role-dates">2013 - 2018</div>
+
+                <div class="courses-taught">
+                    <div class="course-list">
+                        <div class="course-item">Lead instructor for 8 undergraduate courses in composition and literature</div>
+                        <div class="course-item">Teaching assistant for 6 upper-division literature seminars</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Curriculum Development -->
+        <div class="section">
+            <div class="section-title">Curriculum Development</div>
+
+            <div class="curriculum-item">
+                <div class="curriculum-title">First-Year Seminar: "Literature and Social Change"</div>
+                <div class="curriculum-details">
+                    Designed interdisciplinary freshman seminar connecting literary movements to social reform.
+                    Integrated community engagement component with local literacy organizations. Course now part of
+                    core curriculum (2022-Present).
+                </div>
+            </div>
+
+            <div class="curriculum-item">
+                <div class="curriculum-title">Online Course Redesign: "Victorian Literature"</div>
+                <div class="curriculum-details">
+                    Converted traditional lecture course to hybrid format using active learning strategies,
+                    discussion boards, and multimedia resources. Student engagement increased 35% based on
+                    participation metrics (2023).
+                </div>
+            </div>
+
+            <div class="curriculum-item">
+                <div class="curriculum-title">Inclusive Pedagogy Workshop Series</div>
+                <div class="curriculum-details">
+                    Developed and led faculty workshop on diversifying literature curricula and creating
+                    inclusive classroom environments. Adopted by 15 faculty across humanities departments (2021-2023).
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Mentoring & Advising -->
+        <div class="section">
+            <div class="section-title">Student Mentoring & Advising</div>
+
+            <div class="curriculum-item">
+                <div class="curriculum-title">Academic Advisor</div>
+                <div class="curriculum-details">
+                    Primary advisor for 32 English majors and 18 minors. Guided 12 students through senior honors
+                    thesis projects, with 8 graduating with departmental honors.
+                </div>
+            </div>
+
+            <div class="curriculum-item">
+                <div class="curriculum-title">Undergraduate Research Mentor</div>
+                <div class="curriculum-details">
+                    Supervised 6 summer research students; 4 presented at national undergraduate research conferences.
+                    Co-authored publication with undergraduate student (see Publications).
+                </div>
+            </div>
+
+            <div class="curriculum-item">
+                <div class="curriculum-title">Graduate School Application Support</div>
+                <div class="curriculum-details">
+                    Mentored 15 students through graduate school application process; 12 admitted to Ph.D. programs
+                    in English, with 8 receiving full funding packages.
+                </div>
+            </div>
+        </div>
+
+        <!-- Teaching-Related Awards & Recognition -->
+        <div class="section">
+            <div class="section-title">Teaching-Related Awards & Recognition</div>
+
+            <div class="award-item">
+                <div class="award-title">Excellence in Teaching Award</div>
+                <div class="award-details">Liberal Arts College (College-wide recognition, top 5% of faculty) | 2024</div>
+            </div>
+
+            <div class="award-item">
+                <div class="award-title">Outstanding First-Year Seminar Award</div>
+                <div class="award-details">Liberal Arts College | 2023</div>
+            </div>
+
+            <div class="award-item">
+                <div class="award-title">Graduate Teaching Award</div>
+                <div class="award-details">UCLA Department of English | 2017</div>
+            </div>
+
+            <div class="award-item">
+                <div class="award-title">Distinguished Teaching Assistant Award</div>
+                <div class="award-details">UCLA Graduate Division | 2016</div>
+            </div>
+        </div>
+
+        <!-- Publications -->
+        <div class="section">
+            <div class="section-title">Publications</div>
+
+            <div class="publication">
+                Educator, J. (2023). "Teaching the Victorian Novel in the Digital Age: Engagement Strategies for Contemporary Students."
+                <em>Pedagogy: Critical Approaches to Teaching Literature, Language, Composition, and Culture, 23</em>(2), 245-268.
+            </div>
+
+            <div class="publication">
+                Educator, J., & Martinez, S. (2022). "Charlotte Brontë's <em>Jane Eyre</em> and Modern Feminism:
+                A Student-Led Research Collaboration." <em>Victorian Literature and Culture, 50</em>(4), 789-804.
+            </div>
+
+            <div class="publication">
+                Educator, J. (2021). "Diversifying the Victorian Literature Syllabus: Voices Beyond the Canon."
+                <em>Teaching English in the Two-Year College, 48</em>(3), 312-328.
+            </div>
+
+            <div class="publication">
+                Educator, J. (2019). <em>Victorian Women Writers and Social Reform Movements.</em> Dissertation, UCLA.
+            </div>
+        </div>
+
+        <!-- Service to Teaching -->
+        <div class="section">
+            <div class="section-title">Service to Teaching</div>
+
+            <div class="service-category">
+                <div class="service-category-title">Department Service</div>
+                <div class="service-item">Chair, Curriculum Committee (2023-Present)</div>
+                <div class="service-item">Member, Assessment Committee (2021-Present)</div>
+                <div class="service-item">Coordinator, First-Year Seminar Program (2022-2024)</div>
+            </div>
+
+            <div class="service-category">
+                <div class="service-category-title">College Service</div>
+                <div class="service-item">Faculty Learning Community on Inclusive Pedagogy, Facilitator (2023-2024)</div>
+                <div class="service-item">Center for Teaching Excellence, Advisory Board Member (2022-Present)</div>
+                <div class="service-item">First-Year Experience Task Force (2021-2022)</div>
+            </div>
+
+            <div class="service-category">
+                <div class="service-category-title">Community Engagement</div>
+                <div class="service-item">Partnership Coordinator with City Literacy Program (2020-Present)</div>
+                <div class="service-item">Guest speaker at local high schools' college preparation programs (Annual)</div>
+            </div>
+        </div>
+
+        <!-- Professional Development -->
+        <div class="section">
+            <div class="section-title">Professional Development in Teaching</div>
+
+            <div class="dev-item">
+                <span class="dev-title">Certificate in College Teaching,</span> UCLA Center for Education Innovation and Learning in the Sciences (2017)
+            </div>
+
+            <div class="dev-item">
+                <span class="dev-title">Inclusive Teaching Institute,</span> Liberal Arts College (Summer 2021)
+            </div>
+
+            <div class="dev-item">
+                <span class="dev-title">Assessment Workshop Series,</span> AAC&U (2022)
+            </div>
+
+            <div class="dev-item">
+                <span class="dev-title">Online and Hybrid Course Design Workshop,</span> Quality Matters (2023)
+            </div>
+
+            <div class="dev-item">
+                <span class="dev-title">Active Learning Strategies Workshop,</span> POD Network Annual Conference (2020, 2022, 2024)
+            </div>
+        </div>
+
+        <!-- Professional Memberships -->
+        <div class="section">
+            <div class="section-title">Professional Memberships</div>
+
+            <div style="font-size: 10.5pt; line-height: 1.8;">
+                <div>Modern Language Association (MLA)</div>
+                <div>Victorian Studies Association of Western Canada</div>
+                <div>National Council of Teachers of English (NCTE)</div>
+                <div>Professional and Organizational Development (POD) Network in Higher Education</div>
+            </div>
+        </div>
+
+        <!-- References -->
+        <div class="section">
+            <div class="section-title">References</div>
+
+            <div class="reference">
+                <div class="reference-name">Dr. Margaret Thompson</div>
+                <div class="reference-title">Department Chair, Professor of English</div>
+                <div class="reference-institution">Liberal Arts College</div>
+                <div class="reference-contact">
+                    Email: m.thompson@college.edu | Phone: (555) 345-6789
+                </div>
+            </div>
+
+            <div class="reference">
+                <div class="reference-name">Dr. Robert Williams</div>
+                <div class="reference-title">Director, Center for Teaching Excellence</div>
+                <div class="reference-institution">Liberal Arts College</div>
+                <div class="reference-contact">
+                    Email: r.williams@college.edu | Phone: (555) 456-7890
+                </div>
+            </div>
+
+            <div class="reference">
+                <div class="reference-name">Dr. Susan Martinez</div>
+                <div class="reference-title">Professor of English (Dissertation Advisor)</div>
+                <div class="reference-institution">University of California, Los Angeles</div>
+                <div class="reference-contact">
+                    Email: smartinez@ucla.edu | Phone: (310) 555-0123
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

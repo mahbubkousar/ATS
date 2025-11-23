@@ -604,3 +604,57 @@
         display: none;
     }
 }
+
+@media (max-width: 375px) {
+    .ai-editor-container {
+        padding: 0.65rem;
+    }
+
+    .chat-header {
+        padding: 1.15rem;
+    }
+
+    .chat-header h2 {
+        font-size: 0.95rem;
+    }
+
+    .chat-header p {
+        font-size: 0.7rem;
+    }
+
+    .new-chat-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.7rem;
+    }
+
+    .chat-messages {
+        padding: 0.875rem 0.75rem;
+    }
+
+    .message-avatar {
+        width: 26px;
+        height: 26px;
+        font-size: 0.85rem;
+    }
+
+    .message-content p {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .chat-input {
+        padding: 0.8rem 0.9rem;
+        font-size: 0.825rem;
+    }
+
+    .send-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 0.95rem;
+    }
+
+    .quick-action-btn {
+        padding: 0.4rem 0.65rem;
+        font-size: 0.7rem;
+    }
+}

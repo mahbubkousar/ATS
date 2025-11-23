@@ -1,3 +1,7 @@
+<?php
+require_once 'config/session.php';
+requireLogin();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,8 +20,8 @@
         <div class="nav-content">
             <a href="index.html" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
             <div class="nav-links">
-                <a href="dashboard.html" class="nav-link">Dashboard</a>
-                <a href="score-checker.html" class="nav-link">ATS Checker</a>
+                <a href="dashboard.php" class="nav-link">Dashboard</a>
+                <a href="score-checker.php" class="nav-link">ATS Checker</a>
                 <a href="about.html" class="nav-link">About</a>
                 <button class="nav-cta download-btn" id="downloadBtn">Download Resume</button>
             </div>
@@ -225,6 +229,8 @@
     </div>
 
     <script src="js/app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="js/ai-editor.js"></script>
 </body>
 </html>

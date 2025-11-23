@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Resume Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Calibri', 'Arial', sans-serif;
+            color: #334155;
+            line-height: 1.6;
+            background: white;
+        }
+
+        .resume-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.75in;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #0ea5e9;
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 24pt;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header .title {
+            font-size: 14pt;
+            color: #0ea5e9;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .contact-info {
+            font-size: 10pt;
+            color: #475569;
+            margin-top: 8px;
+        }
+
+        .contact-info span {
+            margin: 0 8px;
+        }
+
+        /* Main Content - Two Column */
+        .main-content {
+            display: table;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .sidebar {
+            display: table-cell;
+            width: 30%;
+            vertical-align: top;
+            padding-right: 20px;
+            border-right: 2px solid #e2e8f0;
+        }
+
+        .content {
+            display: table-cell;
+            width: 70%;
+            vertical-align: top;
+            padding-left: 20px;
+        }
+
+        /* Section Headers */
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #0ea5e9;
+        }
+
+        /* Technical Skills */
+        .skill-category {
+            margin-bottom: 12px;
+        }
+
+        .skill-category-name {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 10pt;
+            margin-bottom: 4px;
+        }
+
+        .skill-items {
+            font-size: 9.5pt;
+            color: #475569;
+            line-height: 1.5;
+            padding-left: 8px;
+        }
+
+        .skill-item {
+            font-family: 'Courier New', monospace;
+            background: #f8fafc;
+            padding: 2px 6px;
+            margin: 2px;
+            display: inline-block;
+            border-radius: 3px;
+            font-size: 9pt;
+        }
+
+        /* Experience */
+        .experience-item {
+            margin-bottom: 18px;
+        }
+
+        .experience-header {
+            margin-bottom: 5px;
+        }
+
+        .job-title {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .company {
+            font-size: 10pt;
+            color: #0ea5e9;
+            font-weight: 600;
+        }
+
+        .date-location {
+            font-size: 9.5pt;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .experience-description {
+            margin-top: 6px;
+        }
+
+        .experience-description ul {
+            margin-left: 18px;
+            margin-top: 5px;
+        }
+
+        .experience-description li {
+            font-size: 10pt;
+            color: #475569;
+            margin-bottom: 4px;
+            line-height: 1.5;
+        }
+
+        /* Projects */
+        .project-item {
+            margin-bottom: 15px;
+        }
+
+        .project-name {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .project-tech {
+            font-size: 9pt;
+            color: #0ea5e9;
+            font-family: 'Courier New', monospace;
+            margin-top: 2px;
+        }
+
+        .project-description {
+            font-size: 10pt;
+            color: #475569;
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+
+        .project-link {
+            font-size: 9pt;
+            color: #0ea5e9;
+            text-decoration: none;
+            margin-top: 3px;
+            display: inline-block;
+        }
+
+        /* Education */
+        .education-item {
+            margin-bottom: 12px;
+        }
+
+        .degree {
+            font-size: 10pt;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .school {
+            font-size: 9.5pt;
+            color: #475569;
+        }
+
+        .edu-date {
+            font-size: 9pt;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        /* Certifications */
+        .cert-item {
+            margin-bottom: 8px;
+            font-size: 9.5pt;
+        }
+
+        .cert-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .cert-issuer {
+            color: #64748b;
+            font-size: 9pt;
+        }
+
+        /* Summary */
+        .summary-text {
+            font-size: 10pt;
+            color: #475569;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .resume-container {
+                padding: 0.5in;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>John Doe</h1>
+            <div class="title">Senior Software Engineer</div>
+            <div class="contact-info">
+                <span>john.doe@email.com</span> •
+                <span>(555) 123-4567</span> •
+                <span>linkedin.com/in/johndoe</span> •
+                <span>github.com/johndoe</span>
+            </div>
+        </div>
+
+        <!-- Main Two-Column Content -->
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <div class="sidebar">
+                <!-- Technical Skills -->
+                <div class="section">
+                    <div class="section-title">Technical Skills</div>
+
+                    <div class="skill-category">
+                        <div class="skill-category-name">Languages</div>
+                        <div class="skill-items">
+                            <span class="skill-item">Python</span>
+                            <span class="skill-item">JavaScript</span>
+                            <span class="skill-item">TypeScript</span>
+                            <span class="skill-item">Java</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-category">
+                        <div class="skill-category-name">Frameworks</div>
+                        <div class="skill-items">
+                            <span class="skill-item">React</span>
+                            <span class="skill-item">Node.js</span>
+                            <span class="skill-item">Django</span>
+                            <span class="skill-item">Spring Boot</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-category">
+                        <div class="skill-category-name">Tools & Platforms</div>
+                        <div class="skill-items">
+                            <span class="skill-item">Docker</span>
+                            <span class="skill-item">Kubernetes</span>
+                            <span class="skill-item">AWS</span>
+                            <span class="skill-item">Git</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-category">
+                        <div class="skill-category-name">Databases</div>
+                        <div class="skill-items">
+                            <span class="skill-item">PostgreSQL</span>
+                            <span class="skill-item">MongoDB</span>
+                            <span class="skill-item">Redis</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Education -->
+                <div class="section">
+                    <div class="section-title">Education</div>
+                    <div class="education-item">
+                        <div class="degree">BS Computer Science</div>
+                        <div class="school">University Name</div>
+                        <div class="edu-date">2015 - 2019</div>
+                    </div>
+                </div>
+
+                <!-- Certifications -->
+                <div class="section">
+                    <div class="section-title">Certifications</div>
+                    <div class="cert-item">
+                        <div class="cert-name">AWS Solutions Architect</div>
+                        <div class="cert-issuer">Amazon Web Services</div>
+                    </div>
+                    <div class="cert-item">
+                        <div class="cert-name">Certified Kubernetes Admin</div>
+                        <div class="cert-issuer">CNCF</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Content Area -->
+            <div class="content">
+                <!-- Professional Summary -->
+                <div class="section">
+                    <div class="section-title">Professional Summary</div>
+                    <p class="summary-text">
+                        Results-driven Software Engineer with 5+ years of experience building scalable web applications and cloud infrastructure.
+                        Expertise in full-stack development, microservices architecture, and DevOps practices. Proven track record of delivering
+                        high-quality solutions that improve performance by 40% and reduce operational costs.
+                    </p>
+                </div>
+
+                <!-- Professional Experience -->
+                <div class="section">
+                    <div class="section-title">Professional Experience</div>
+
+                    <div class="experience-item">
+                        <div class="experience-header">
+                            <div class="job-title">Senior Software Engineer</div>
+                            <div class="company">Tech Company Inc.</div>
+                            <div class="date-location">Jan 2021 - Present | San Francisco, CA</div>
+                        </div>
+                        <div class="experience-description">
+                            <ul>
+                                <li>Led development of microservices architecture serving 2M+ users, improving system scalability by 300%</li>
+                                <li>Implemented CI/CD pipelines using Jenkins and Docker, reducing deployment time from 2 hours to 15 minutes</li>
+                                <li>Mentored team of 5 junior developers and conducted code reviews to maintain high code quality standards</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="experience-item">
+                        <div class="experience-header">
+                            <div class="job-title">Software Engineer</div>
+                            <div class="company">StartUp Solutions</div>
+                            <div class="date-location">Jun 2019 - Dec 2020 | Austin, TX</div>
+                        </div>
+                        <div class="experience-description">
+                            <ul>
+                                <li>Developed RESTful APIs using Node.js and Express, handling 50K+ requests per day</li>
+                                <li>Optimized database queries reducing average response time by 60%</li>
+                                <li>Collaborated with cross-functional teams to deliver features on time and within budget</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects -->
+                <div class="section">
+                    <div class="section-title">Key Projects</div>
+
+                    <div class="project-item">
+                        <div class="project-name">E-Commerce Platform Rebuild</div>
+                        <div class="project-tech">React, Node.js, PostgreSQL, AWS</div>
+                        <div class="project-description">
+                            Architected and built a scalable e-commerce platform handling $5M+ in annual transactions.
+                            Implemented payment processing, inventory management, and real-time analytics dashboard.
+                        </div>
+                    </div>
+
+                    <div class="project-item">
+                        <div class="project-name">DevOps Automation Suite</div>
+                        <div class="project-tech">Python, Docker, Kubernetes, Terraform</div>
+                        <div class="project-description">
+                            Created automation tools for infrastructure provisioning and deployment, reducing manual DevOps work by 70%.
+                            Integrated monitoring and alerting using Prometheus and Grafana.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

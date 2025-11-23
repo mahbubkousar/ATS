@@ -275,32 +275,37 @@
 @media (max-width: 1024px) {
     .about-container {
         max-width: 900px;
+        padding: 0 1.25rem;
     }
 
     .pricing-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-        max-width: 500px;
-        margin: 0 auto;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.75rem;
+    }
+
+    .about-main {
+        padding: 90px 1.25rem 2.5rem;
     }
 }
 
 @media (max-width: 768px) {
     .about-main {
-        padding: 80px 1.25rem 2.5rem;
+        padding: 85px 1rem 2.25rem;
     }
 
     .about-hero {
-        padding: 1.5rem 0 3rem;
+        padding: 1.5rem 0 2.5rem;
     }
 
     .about-title {
         font-size: 2rem;
         margin-bottom: 0.75rem;
+        line-height: 1.3;
     }
 
     .about-subtitle {
         font-size: 0.95rem;
+        line-height: 1.5;
     }
 
     .about-container {
@@ -330,6 +335,7 @@
 
     .section-text {
         font-size: 0.9rem;
+        line-height: 1.65;
     }
 
     .pricing-title {
@@ -340,6 +346,13 @@
     .pricing-subtitle {
         font-size: 0.9rem;
         margin-bottom: 2rem;
+    }
+
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        max-width: 500px;
+        margin: 0 auto;
     }
 
     .pricing-card {
@@ -364,6 +377,7 @@
     .plan-button {
         padding: 0.875rem;
         font-size: 0.95rem;
+        border-radius: 10px;
     }
 
     .about-cta {
@@ -378,11 +392,13 @@
     .cta-card h2 {
         font-size: 1.65rem;
         margin-bottom: 0.875rem;
+        line-height: 1.3;
     }
 
     .cta-card p {
         font-size: 0.95rem;
         margin-bottom: 1.75rem;
+        line-height: 1.6;
     }
 
     .cta-button {
@@ -398,20 +414,22 @@
     }
 
     .about-main {
-        padding: 70px 1rem 2rem;
+        padding: 75px 1rem 2rem;
     }
 
     .about-hero {
-        padding: 1.25rem 0 2.5rem;
+        padding: 1.25rem 0 2rem;
     }
 
     .about-title {
-        font-size: 1.75rem;
+        font-size: 1.7rem;
         margin-bottom: 0.65rem;
+        line-height: 1.3;
     }
 
     .about-subtitle {
-        font-size: 0.85rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
     }
 
     .about-container {
@@ -419,44 +437,53 @@
     }
 
     .section-card {
-        padding: 1.75rem 1rem;
+        padding: 1.75rem 1.25rem;
         border-radius: 14px;
     }
 
     .section-icon {
-        width: 50px;
-        height: 50px;
+        width: 52px;
+        height: 52px;
         border-radius: 12px;
         margin-bottom: 1rem;
     }
 
     .section-icon i {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
     }
 
     .section-title {
-        font-size: 1.25rem;
+        font-size: 1.3rem;
         margin-bottom: 0.875rem;
+        line-height: 1.3;
     }
 
     .section-text {
-        font-size: 0.85rem;
-        line-height: 1.5;
+        font-size: 0.875rem;
+        line-height: 1.65;
     }
 
     .pricing-title {
         font-size: 1.5rem;
         margin-bottom: 0.65rem;
+        line-height: 1.3;
     }
 
     .pricing-subtitle {
         font-size: 0.85rem;
         margin-bottom: 1.75rem;
+        line-height: 1.5;
     }
 
     .pricing-card {
-        padding: 1.75rem 1.25rem;
+        padding: 1.85rem 1.35rem;
         border-radius: 14px;
+    }
+
+    .featured-badge {
+        top: -12px;
+        padding: 0.45rem 1.25rem;
+        font-size: 0.8rem;
     }
 
     .plan-header {
@@ -464,12 +491,12 @@
     }
 
     .plan-name {
-        font-size: 1.05rem;
+        font-size: 1.1rem;
         margin-bottom: 0.65rem;
     }
 
     .price {
-        font-size: 2rem;
+        font-size: 2.1rem;
     }
 
     .period {
@@ -481,44 +508,94 @@
     }
 
     .plan-features li {
-        font-size: 0.8rem;
-        padding: 0.55rem 0;
-        gap: 0.5rem;
+        font-size: 0.825rem;
+        padding: 0.6rem 0;
+        gap: 0.55rem;
     }
 
     .plan-features i {
         font-size: 0.9rem;
+        flex-shrink: 0;
     }
 
     .plan-button {
-        padding: 0.8rem;
+        padding: 0.85rem;
         font-size: 0.9rem;
         border-radius: 10px;
     }
 
     .about-cta {
-        margin-top: 1.25rem;
+        margin-top: 1.5rem;
     }
 
     .cta-card {
-        padding: 2rem 1.25rem;
+        padding: 2.25rem 1.5rem;
         border-radius: 18px;
     }
 
     .cta-card h2 {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         margin-bottom: 0.75rem;
+        line-height: 1.3;
     }
 
     .cta-card p {
-        font-size: 0.875rem;
-        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        margin-bottom: 1.65rem;
+        line-height: 1.6;
     }
 
     .cta-button {
-        padding: 0.8rem 1.75rem;
+        padding: 0.85rem 1.85rem;
         font-size: 0.95rem;
         gap: 0.5rem;
         border-radius: 10px;
+    }
+}
+
+@media (max-width: 375px) {
+    .about-main {
+        padding: 70px 0.875rem 1.75rem;
+    }
+
+    .about-title {
+        font-size: 1.55rem;
+    }
+
+    .about-subtitle {
+        font-size: 0.825rem;
+    }
+
+    .section-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+    }
+
+    .pricing-card {
+        padding: 1.65rem 1.15rem;
+    }
+
+    .price {
+        font-size: 1.9rem;
+    }
+
+    .cta-card {
+        padding: 2rem 1.25rem;
+    }
+
+    .cta-card h2 {
+        font-size: 1.35rem;
+    }
+
+    .cta-card p {
+        font-size: 0.85rem;
+    }
+
+    .cta-button {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.9rem;
     }
 }

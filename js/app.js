@@ -98,7 +98,7 @@ function handleStartBuilding() {
 
     // Navigate to login page
     setTimeout(() => {
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
     }, 500);
 }
 
@@ -152,8 +152,12 @@ notificationStyle.textContent = `
 `;
 document.head.appendChild(notificationStyle);
 
-getStartedBtn.addEventListener('click', handleStartBuilding);
-navCtaBtn.addEventListener('click', handleStartBuilding);
+if (getStartedBtn) {
+    getStartedBtn.addEventListener('click', handleStartBuilding);
+}
+if (navCtaBtn) {
+    navCtaBtn.addEventListener('click', handleStartBuilding);
+}
 
 // Smooth scroll for navbar links
 document.querySelectorAll('.nav-link').forEach(link => {

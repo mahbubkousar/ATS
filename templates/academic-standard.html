@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Standard CV Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', 'Georgia', serif;
+            color: #1a1a1a;
+            line-height: 1.5;
+            background: white;
+        }
+
+        .cv-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 1in;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 22pt;
+            font-weight: normal;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .contact-info {
+            font-size: 11pt;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .contact-info div {
+            margin: 3px 0;
+        }
+
+        /* Section Headers */
+        .section {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 13pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Education */
+        .education-entry {
+            margin-bottom: 18px;
+        }
+
+        .degree-line {
+            font-weight: bold;
+            font-size: 11pt;
+            margin-bottom: 3px;
+        }
+
+        .institution {
+            font-style: italic;
+            font-size: 11pt;
+            margin-bottom: 3px;
+        }
+
+        .date-gpa {
+            font-size: 10.5pt;
+            color: #444;
+            margin-bottom: 5px;
+        }
+
+        .dissertation {
+            font-size: 10.5pt;
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+
+        .dissertation-label {
+            font-style: italic;
+        }
+
+        .advisor {
+            font-size: 10pt;
+            margin-left: 20px;
+            color: #444;
+        }
+
+        /* Research Experience */
+        .experience-entry {
+            margin-bottom: 18px;
+        }
+
+        .position-title {
+            font-weight: bold;
+            font-size: 11pt;
+        }
+
+        .employer-date {
+            font-size: 10.5pt;
+            margin-bottom: 5px;
+        }
+
+        .employer {
+            font-style: italic;
+        }
+
+        .description {
+            font-size: 10.5pt;
+            margin-top: 5px;
+            text-align: justify;
+        }
+
+        .description ul {
+            margin-left: 25px;
+            margin-top: 5px;
+        }
+
+        .description li {
+            margin-bottom: 4px;
+        }
+
+        /* Publications */
+        .publication-subsection {
+            margin-bottom: 15px;
+        }
+
+        .publication-type {
+            font-weight: bold;
+            font-size: 11pt;
+            margin-bottom: 8px;
+            margin-top: 10px;
+        }
+
+        .publication {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            text-indent: -25px;
+            font-size: 10.5pt;
+            line-height: 1.4;
+        }
+
+        .publication-authors {
+            font-weight: normal;
+        }
+
+        .publication-year {
+            font-weight: bold;
+        }
+
+        .publication-title {
+            font-style: italic;
+        }
+
+        .publication-journal {
+            font-weight: normal;
+        }
+
+        /* Presentations */
+        .presentation {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            text-indent: -25px;
+            font-size: 10.5pt;
+            line-height: 1.4;
+        }
+
+        /* Grants */
+        .grant-entry {
+            margin-bottom: 12px;
+        }
+
+        .grant-title {
+            font-weight: bold;
+            font-size: 10.5pt;
+        }
+
+        .grant-details {
+            font-size: 10.5pt;
+            margin-left: 20px;
+            margin-top: 3px;
+        }
+
+        /* Teaching */
+        .teaching-category {
+            margin-bottom: 15px;
+        }
+
+        .teaching-category-title {
+            font-weight: bold;
+            font-size: 11pt;
+            margin-bottom: 6px;
+        }
+
+        .course {
+            font-size: 10.5pt;
+            margin-bottom: 6px;
+            margin-left: 20px;
+        }
+
+        .course-title {
+            font-weight: bold;
+        }
+
+        /* Service */
+        .service-entry {
+            margin-bottom: 8px;
+            font-size: 10.5pt;
+        }
+
+        .service-role {
+            font-weight: bold;
+        }
+
+        /* Professional Memberships */
+        .membership {
+            margin-bottom: 6px;
+            font-size: 10.5pt;
+        }
+
+        /* References */
+        .reference {
+            margin-bottom: 18px;
+        }
+
+        .reference-name {
+            font-weight: bold;
+            font-size: 11pt;
+        }
+
+        .reference-title {
+            font-size: 10.5pt;
+            font-style: italic;
+        }
+
+        .reference-institution {
+            font-size: 10.5pt;
+        }
+
+        .reference-contact {
+            font-size: 10pt;
+            color: #444;
+            margin-top: 3px;
+        }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .cv-container {
+                padding: 0.5in;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Page Numbers for Multi-page */
+        @page {
+            margin: 1in;
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Dr. Sarah Academic</h1>
+            <div class="contact-info">
+                <div>Department of Psychology | University Name</div>
+                <div>123 Research Hall, City, State 12345</div>
+                <div>sarah.academic@university.edu | (555) 123-4567</div>
+                <div>ORCID: 0000-0001-2345-6789 | Google Scholar Profile</div>
+            </div>
+        </div>
+
+        <!-- Education -->
+        <div class="section">
+            <div class="section-title">Education</div>
+
+            <div class="education-entry">
+                <div class="degree-line">Ph.D., Clinical Psychology</div>
+                <div class="institution">University of California, Berkeley</div>
+                <div class="date-gpa">2018 | GPA: 3.95/4.0</div>
+                <div class="dissertation">
+                    <span class="dissertation-label">Dissertation:</span> "Cognitive Behavioral Interventions for Anxiety Disorders in Adolescents: A Meta-Analytic Review"
+                </div>
+                <div class="advisor">Advisor: Dr. Jane Smith</div>
+            </div>
+
+            <div class="education-entry">
+                <div class="degree-line">M.A., Psychology</div>
+                <div class="institution">University of California, Berkeley</div>
+                <div class="date-gpa">2015</div>
+            </div>
+
+            <div class="education-entry">
+                <div class="degree-line">B.A., Psychology, <em>summa cum laude</em></div>
+                <div class="institution">Stanford University</div>
+                <div class="date-gpa">2013 | Phi Beta Kappa</div>
+            </div>
+        </div>
+
+        <!-- Research Experience -->
+        <div class="section">
+            <div class="section-title">Research Experience</div>
+
+            <div class="experience-entry">
+                <div class="position-title">Assistant Professor</div>
+                <div class="employer-date">
+                    <span class="employer">Department of Psychology, University Name</span> <span style="float: right;">2020 - Present</span>
+                </div>
+                <div class="description">
+                    <ul>
+                        <li>Direct the Clinical Psychology Research Lab focusing on evidence-based treatments for anxiety disorders</li>
+                        <li>Supervise 5 graduate students and 10 undergraduate research assistants</li>
+                        <li>Conduct longitudinal studies on adolescent mental health outcomes</li>
+                        <li>Collaborate with community mental health centers on implementation science projects</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="experience-entry">
+                <div class="position-title">Postdoctoral Research Fellow</div>
+                <div class="employer-date">
+                    <span class="employer">McLean Hospital / Harvard Medical School</span> <span style="float: right;">2018 - 2020</span>
+                </div>
+                <div class="description">
+                    <ul>
+                        <li>Conducted research on neurobiological mechanisms of anxiety disorders</li>
+                        <li>Developed and validated assessment instruments for clinical populations</li>
+                        <li>Published 8 peer-reviewed articles in high-impact journals</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publications -->
+        <div class="section">
+            <div class="section-title">Publications</div>
+
+            <div class="publication-subsection">
+                <div class="publication-type">Peer-Reviewed Journal Articles</div>
+
+                <div class="publication">
+                    Academic, S., & Collaborator, J. <span class="publication-year">(2024).</span> <span class="publication-title">Meta-analysis of cognitive behavioral therapy efficacy for adolescent anxiety.</span> <em>Journal of Clinical Psychology, 80</em>(2), 234-256. https://doi.org/10.1234/jcp.2024.001
+                </div>
+
+                <div class="publication">
+                    Smith, J., Academic, S., & Davis, K. <span class="publication-year">(2023).</span> <span class="publication-title">Neurobiological correlates of treatment response in anxiety disorders.</span> <em>Biological Psychiatry, 94</em>(8), 654-668. https://doi.org/10.1234/bp.2023.045
+                </div>
+
+                <div class="publication">
+                    Academic, S., Johnson, M., & Williams, R. <span class="publication-year">(2023).</span> <span class="publication-title">Development and validation of the Adolescent Anxiety Assessment Scale.</span> <em>Psychological Assessment, 35</em>(4), 412-425. https://doi.org/10.1234/pa.2023.012
+                </div>
+            </div>
+
+            <div class="publication-subsection">
+                <div class="publication-type">Book Chapters</div>
+
+                <div class="publication">
+                    Academic, S. <span class="publication-year">(2024).</span> <span class="publication-title">Evidence-based interventions for anxiety in adolescents.</span> In R. Brown & T. Jones (Eds.), <em>Handbook of Adolescent Mental Health</em> (pp. 145-178). Oxford University Press.
+                </div>
+            </div>
+
+            <div class="publication-subsection">
+                <div class="publication-type">Manuscripts Under Review</div>
+
+                <div class="publication">
+                    Academic, S., & Research Team. (under review). <span class="publication-title">Long-term outcomes of CBT for anxiety: A 5-year follow-up study.</span> Submitted to <em>JAMA Psychiatry</em>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Conference Presentations -->
+        <div class="section">
+            <div class="section-title">Conference Presentations</div>
+
+            <div class="presentation">
+                Academic, S. (2024, May). <em>Integrating technology in CBT for adolescent anxiety.</em> Paper presented at the Association for Behavioral and Cognitive Therapies Annual Convention, San Francisco, CA.
+            </div>
+
+            <div class="presentation">
+                Academic, S., & Davis, K. (2023, November). <em>Neural mechanisms of therapeutic change in anxiety treatment.</em> Poster presented at the Society for Neuroscience Annual Meeting, Washington, DC.
+            </div>
+
+            <div class="presentation">
+                Academic, S. (2023, June). <em>Meta-analytic findings on CBT efficacy for youth anxiety.</em> Symposium presentation at the Annual Convention of the American Psychological Association, Denver, CO.
+            </div>
+        </div>
+
+        <!-- Grants and Fellowships -->
+        <div class="section">
+            <div class="section-title">Grants and Fellowships</div>
+
+            <div class="grant-entry">
+                <div class="grant-title">National Institute of Mental Health (NIMH) R01 Grant</div>
+                <div class="grant-details">
+                    Principal Investigator (2023-2028)<br>
+                    "Longitudinal Study of CBT Mechanisms in Adolescent Anxiety Disorders"<br>
+                    Direct Costs: $1,250,000
+                </div>
+            </div>
+
+            <div class="grant-entry">
+                <div class="grant-title">University Research Council Grant</div>
+                <div class="grant-details">
+                    Principal Investigator (2022-2024)<br>
+                    "Development of Digital Assessment Tools for Anxiety Screening"<br>
+                    Amount: $50,000
+                </div>
+            </div>
+
+            <div class="grant-entry">
+                <div class="grant-title">National Science Foundation Graduate Research Fellowship</div>
+                <div class="grant-details">
+                    Recipient (2015-2018)<br>
+                    Three years of graduate study support
+                </div>
+            </div>
+        </div>
+
+        <!-- Teaching Experience -->
+        <div class="section">
+            <div class="section-title">Teaching Experience</div>
+
+            <div class="teaching-category">
+                <div class="teaching-category-title">Instructor of Record</div>
+                <div class="course">
+                    <span class="course-title">Clinical Psychology Seminar (PSY 610)</span> - Fall 2023, Fall 2022, Fall 2021
+                </div>
+                <div class="course">
+                    <span class="course-title">Cognitive Behavioral Therapy (PSY 520)</span> - Spring 2024, Spring 2023, Spring 2022
+                </div>
+                <div class="course">
+                    <span class="course-title">Introduction to Clinical Psychology (PSY 220)</span> - Fall 2024, Fall 2023, Spring 2021
+                </div>
+            </div>
+
+            <div class="teaching-category">
+                <div class="teaching-category-title">Graduate Student Supervision</div>
+                <div class="course">
+                    Currently supervising 5 doctoral students and 2 master's students
+                </div>
+                <div class="course">
+                    Served on 12 dissertation committees (3 as chair)
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Service -->
+        <div class="section">
+            <div class="section-title">Academic Service</div>
+
+            <div class="service-entry">
+                <span class="service-role">Journal Reviewer:</span> Journal of Clinical Psychology, Psychological Assessment, Behavior Therapy, Clinical Psychology Review
+            </div>
+
+            <div class="service-entry">
+                <span class="service-role">Grant Reviewer:</span> National Science Foundation, Graduate Research Fellowship Program (2023-Present)
+            </div>
+
+            <div class="service-entry">
+                <span class="service-role">Department Committee:</span> Graduate Admissions Committee, University Name (2022-Present)
+            </div>
+
+            <div class="service-entry">
+                <span class="service-role">Department Committee:</span> Curriculum Committee, University Name (2021-2023)
+            </div>
+        </div>
+
+        <!-- Professional Memberships -->
+        <div class="section">
+            <div class="section-title">Professional Memberships</div>
+
+            <div class="membership">American Psychological Association (APA), Division 12 (Clinical Psychology)</div>
+            <div class="membership">Association for Behavioral and Cognitive Therapies (ABCT)</div>
+            <div class="membership">Society for Clinical Child and Adolescent Psychology</div>
+            <div class="membership">Society for Research in Psychopathology</div>
+        </div>
+
+        <!-- References -->
+        <div class="section">
+            <div class="section-title">References</div>
+
+            <div class="reference">
+                <div class="reference-name">Dr. Jane Smith</div>
+                <div class="reference-title">Professor of Psychology</div>
+                <div class="reference-institution">University of California, Berkeley</div>
+                <div class="reference-contact">
+                    Email: jane.smith@berkeley.edu | Phone: (510) 555-0123
+                </div>
+            </div>
+
+            <div class="reference">
+                <div class="reference-name">Dr. Michael Johnson</div>
+                <div class="reference-title">Director, Clinical Psychology Program</div>
+                <div class="reference-institution">McLean Hospital / Harvard Medical School</div>
+                <div class="reference-contact">
+                    Email: mjohnson@mclean.harvard.edu | Phone: (617) 555-0456
+                </div>
+            </div>
+
+            <div class="reference">
+                <div class="reference-name">Dr. Emily Davis</div>
+                <div class="reference-title">Associate Professor of Psychiatry</div>
+                <div class="reference-institution">Yale School of Medicine</div>
+                <div class="reference-contact">
+                    Email: emily.davis@yale.edu | Phone: (203) 555-0789
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

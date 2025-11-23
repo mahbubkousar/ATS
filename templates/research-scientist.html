@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Scientist CV Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Calibri', sans-serif;
+            color: #2c3e50;
+            line-height: 1.5;
+            background: white;
+        }
+
+        .cv-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.75in;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            border-bottom: 3px solid #1e3a8a;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 24pt;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            font-size: 12pt;
+            color: #475569;
+            margin-bottom: 10px;
+        }
+
+        .contact-info {
+            font-size: 10pt;
+            color: #64748b;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .contact-item::before {
+            content: "•";
+            color: #1e3a8a;
+            font-weight: bold;
+        }
+
+        .contact-item:first-child::before {
+            content: "";
+        }
+
+        /* Research Metrics Box */
+        .metrics-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-left: 4px solid #1e3a8a;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 5px 15px;
+        }
+
+        .metric-value {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .metric-label {
+            font-size: 9pt;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content - Two Column */
+        .main-content {
+            display: table;
+            width: 100%;
+        }
+
+        .sidebar {
+            display: table-cell;
+            width: 28%;
+            vertical-align: top;
+            padding-right: 20px;
+        }
+
+        .content-main {
+            display: table-cell;
+            width: 72%;
+            vertical-align: top;
+            padding-left: 20px;
+            border-left: 2px solid #e2e8f0;
+        }
+
+        /* Section Headers */
+        .section {
+            margin-bottom: 22px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #1e3a8a;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #1e3a8a;
+            letter-spacing: 0.5px;
+        }
+
+        /* Research Interests */
+        .research-interests {
+            font-size: 10pt;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        .keywords {
+            margin-top: 8px;
+            font-size: 9.5pt;
+            color: #475569;
+        }
+
+        .keyword {
+            display: inline-block;
+            background: #e0f2fe;
+            padding: 3px 8px;
+            margin: 3px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        /* Technical Skills */
+        .skill-category {
+            margin-bottom: 12px;
+        }
+
+        .skill-category-name {
+            font-weight: 700;
+            font-size: 10pt;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+
+        .skill-list {
+            font-size: 9.5pt;
+            color: #475569;
+            line-height: 1.5;
+            margin-left: 12px;
+        }
+
+        .skill-list li {
+            margin-bottom: 2px;
+        }
+
+        /* Appointments */
+        .appointment {
+            margin-bottom: 15px;
+        }
+
+        .appointment-title {
+            font-weight: 700;
+            font-size: 11pt;
+            color: #2c3e50;
+        }
+
+        .appointment-institution {
+            font-size: 10pt;
+            color: #475569;
+            font-style: italic;
+        }
+
+        .appointment-date {
+            font-size: 9.5pt;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* Education */
+        .education-entry {
+            margin-bottom: 12px;
+        }
+
+        .degree {
+            font-weight: 700;
+            font-size: 10.5pt;
+        }
+
+        .institution-edu {
+            font-size: 10pt;
+            color: #475569;
+        }
+
+        .date-edu {
+            font-size: 9.5pt;
+            color: #64748b;
+        }
+
+        /* Publications */
+        .publication-category {
+            margin-bottom: 18px;
+        }
+
+        .publication-category-title {
+            font-weight: 700;
+            font-size: 11pt;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+
+        .publication {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            text-indent: -20px;
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+
+        .pub-authors {
+            font-weight: normal;
+        }
+
+        .pub-year {
+            font-weight: 700;
+        }
+
+        .pub-title {
+            font-style: italic;
+        }
+
+        .pub-journal {
+            font-weight: 600;
+        }
+
+        .impact-factor {
+            color: #059669;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+
+        .citations {
+            color: #6366f1;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+
+        /* Grants */
+        .grant {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8fafc;
+            border-left: 3px solid #059669;
+        }
+
+        .grant-title {
+            font-weight: 700;
+            font-size: 10.5pt;
+            color: #2c3e50;
+        }
+
+        .grant-role {
+            font-size: 10pt;
+            color: #059669;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .grant-details {
+            font-size: 10pt;
+            color: #475569;
+            margin-top: 5px;
+        }
+
+        .grant-amount {
+            font-weight: 700;
+            color: #059669;
+        }
+
+        /* Teaching */
+        .teaching-entry {
+            margin-bottom: 10px;
+        }
+
+        .course-info {
+            font-size: 10pt;
+            font-weight: 600;
+        }
+
+        .student-count {
+            font-size: 9.5pt;
+            color: #64748b;
+            margin-left: 15px;
+        }
+
+        /* Service */
+        .service-item {
+            margin-bottom: 8px;
+            font-size: 10pt;
+        }
+
+        .service-role {
+            font-weight: 600;
+        }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .cv-container {
+                padding: 0.5in;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Dr. Michael Researcher</h1>
+            <div class="header-subtitle">Computational Neuroscience | Machine Learning | Systems Biology</div>
+            <div class="contact-info">
+                <div class="contact-item">michael.researcher@university.edu</div>
+                <div class="contact-item">(555) 987-6543</div>
+                <div class="contact-item">ORCID: 0000-0002-3456-7890</div>
+                <div class="contact-item">ResearchGate | Google Scholar</div>
+            </div>
+        </div>
+
+        <!-- Research Metrics -->
+        <div class="metrics-box">
+            <div class="metric">
+                <div class="metric-value">45</div>
+                <div class="metric-label">Publications</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">2,350</div>
+                <div class="metric-label">Citations</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">28</div>
+                <div class="metric-label">h-index</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">$3.2M</div>
+                <div class="metric-label">Total Funding</div>
+            </div>
+        </div>
+
+        <!-- Main Two-Column Content -->
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <div class="sidebar">
+                <!-- Technical Expertise -->
+                <div class="section">
+                    <div class="section-title">Technical Expertise</div>
+
+                    <div class="skill-category">
+                        <div class="skill-category-name">Programming</div>
+                        <ul class="skill-list">
+                            <li>Python (Expert)</li>
+                            <li>MATLAB</li>
+                            <li>R</li>
+                            <li>Julia</li>
+                            <li>C++</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <div class="skill-category-name">ML/AI Frameworks</div>
+                        <ul class="skill-list">
+                            <li>TensorFlow</li>
+                            <li>PyTorch</li>
+                            <li>scikit-learn</li>
+                            <li>Keras</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <div class="skill-category-name">Neuroimaging</div>
+                        <ul class="skill-list">
+                            <li>fMRI Analysis</li>
+                            <li>EEG/MEG</li>
+                            <li>FSL, SPM</li>
+                            <li>FreeSurfer</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <div class="skill-category-name">Data Science</div>
+                        <ul class="skill-list">
+                            <li>Statistical Modeling</li>
+                            <li>Machine Learning</li>
+                            <li>Data Visualization</li>
+                            <li>High-Performance Computing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Education -->
+                <div class="section">
+                    <div class="section-title">Education</div>
+
+                    <div class="education-entry">
+                        <div class="degree">Ph.D., Neuroscience</div>
+                        <div class="institution-edu">MIT</div>
+                        <div class="date-edu">2016</div>
+                    </div>
+
+                    <div class="education-entry">
+                        <div class="degree">M.S., Computer Science</div>
+                        <div class="institution-edu">Stanford University</div>
+                        <div class="date-edu">2012</div>
+                    </div>
+
+                    <div class="education-entry">
+                        <div class="degree">B.S., Physics</div>
+                        <div class="institution-edu">Caltech</div>
+                        <div class="date-edu">2010</div>
+                    </div>
+                </div>
+
+                <!-- Professional Memberships -->
+                <div class="section">
+                    <div class="section-title">Memberships</div>
+                    <div style="font-size: 9.5pt; line-height: 1.6;">
+                        <div style="margin-bottom: 6px;">Society for Neuroscience</div>
+                        <div style="margin-bottom: 6px;">Organization for Computational Neurosciences</div>
+                        <div style="margin-bottom: 6px;">IEEE</div>
+                        <div style="margin-bottom: 6px;">AAAS</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Content Area -->
+            <div class="content-main">
+                <!-- Research Interests -->
+                <div class="section">
+                    <div class="section-title">Research Interests</div>
+                    <div class="research-interests">
+                        Developing computational models to understand neural information processing and applying machine learning
+                        techniques to analyze large-scale neuroimaging datasets. Current focus on understanding mechanisms of
+                        learning and memory through integration of behavioral, neural, and computational approaches.
+                    </div>
+                    <div class="keywords">
+                        <span class="keyword">Computational Neuroscience</span>
+                        <span class="keyword">Machine Learning</span>
+                        <span class="keyword">Neural Networks</span>
+                        <span class="keyword">fMRI</span>
+                        <span class="keyword">Systems Biology</span>
+                        <span class="keyword">Neuroplasticity</span>
+                    </div>
+                </div>
+
+                <!-- Professional Appointments -->
+                <div class="section">
+                    <div class="section-title">Professional Appointments</div>
+
+                    <div class="appointment">
+                        <div class="appointment-title">Associate Professor (with tenure)</div>
+                        <div class="appointment-institution">Department of Neuroscience, University Name</div>
+                        <div class="appointment-date">July 2022 - Present</div>
+                    </div>
+
+                    <div class="appointment">
+                        <div class="appointment-title">Assistant Professor</div>
+                        <div class="appointment-institution">Department of Neuroscience, University Name</div>
+                        <div class="appointment-date">August 2018 - June 2022</div>
+                    </div>
+
+                    <div class="appointment">
+                        <div class="appointment-title">Postdoctoral Research Fellow</div>
+                        <div class="appointment-institution">Allen Institute for Brain Science, Seattle</div>
+                        <div class="appointment-date">September 2016 - July 2018</div>
+                    </div>
+                </div>
+
+                <!-- Publications -->
+                <div class="section">
+                    <div class="section-title">Selected Publications</div>
+
+                    <div class="publication-category">
+                        <div class="publication-category-title">Journal Articles (15 of 45 shown)</div>
+
+                        <div class="publication">
+                            Researcher, M., Smith, A., & Davis, K. <span class="pub-year">(2024).</span>
+                            <span class="pub-title">Deep learning models reveal hierarchical processing in visual cortex.</span>
+                            <span class="pub-journal">Nature Neuroscience, 27</span>(3), 456-470.
+                            <span class="impact-factor">IF: 24.8</span> |
+                            <span class="citations">35 citations</span>
+                        </div>
+
+                        <div class="publication">
+                            Johnson, R., Researcher, M., et al. <span class="pub-year">(2023).</span>
+                            <span class="pub-title">Machine learning predicts cognitive decline from neuroimaging data.</span>
+                            <span class="pub-journal">Science, 381</span>(6660), 890-895.
+                            <span class="impact-factor">IF: 56.9</span> |
+                            <span class="citations">127 citations</span>
+                        </div>
+
+                        <div class="publication">
+                            Researcher, M., & Thompson, L. <span class="pub-year">(2023).</span>
+                            <span class="pub-title">Computational framework for analyzing neural population dynamics.</span>
+                            <span class="pub-journal">Neuron, 111</span>(8), 1234-1250.
+                            <span class="impact-factor">IF: 16.2</span> |
+                            <span class="citations">89 citations</span>
+                        </div>
+
+                        <div class="publication">
+                            Researcher, M., Williams, S., & Chen, X. <span class="pub-year">(2022).</span>
+                            <span class="pub-title">Integration of multi-modal neuroimaging using deep neural networks.</span>
+                            <span class="pub-journal">eLife, 11</span>, e78901.
+                            <span class="impact-factor">IF: 8.7</span> |
+                            <span class="citations">156 citations</span>
+                        </div>
+                    </div>
+
+                    <div class="publication-category">
+                        <div class="publication-category-title">Preprints</div>
+
+                        <div class="publication">
+                            Researcher, M., & Collaborators. (2024).
+                            <span class="pub-title">Large-scale analysis of neural connectivity patterns.</span>
+                            bioRxiv. https://doi.org/10.1101/2024.01.001
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research Grants -->
+                <div class="section">
+                    <div class="section-title">Research Grants</div>
+
+                    <div class="grant">
+                        <div class="grant-title">National Institutes of Health (NIH) R01</div>
+                        <div class="grant-role">Principal Investigator</div>
+                        <div class="grant-details">
+                            "Computational Models of Learning and Memory in Neural Circuits"<br>
+                            <span class="grant-amount">$1,850,000</span> (Direct + Indirect) | 2023-2028
+                        </div>
+                    </div>
+
+                    <div class="grant">
+                        <div class="grant-title">National Science Foundation (NSF) CAREER Award</div>
+                        <div class="grant-role">Principal Investigator</div>
+                        <div class="grant-details">
+                            "Machine Learning Approaches to Neural Data Analysis"<br>
+                            <span class="grant-amount">$650,000</span> | 2021-2026
+                        </div>
+                    </div>
+
+                    <div class="grant">
+                        <div class="grant-title">Brain & Behavior Research Foundation NARSAD Grant</div>
+                        <div class="grant-role">Principal Investigator</div>
+                        <div class="grant-details">
+                            "Neural Mechanisms of Cognitive Flexibility"<br>
+                            <span class="grant-amount">$100,000</span> | 2020-2022 (Completed)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teaching & Mentoring -->
+                <div class="section">
+                    <div class="section-title">Teaching & Mentoring</div>
+
+                    <div class="teaching-entry">
+                        <div class="course-info">Computational Neuroscience (NEUR 610)</div>
+                        <div class="student-count">Graduate seminar | Fall 2024, 2023, 2022, 2021 | Avg. enrollment: 15</div>
+                    </div>
+
+                    <div class="teaching-entry">
+                        <div class="course-info">Machine Learning for Neuroscience (NEUR 540)</div>
+                        <div class="student-count">Graduate course | Spring 2024, 2023, 2022 | Avg. enrollment: 25</div>
+                    </div>
+
+                    <div class="teaching-entry">
+                        <div class="course-info">Graduate Students Supervised:</div>
+                        <div class="student-count">6 PhD students (current), 4 completed PhDs, 8 master's students</div>
+                    </div>
+
+                    <div class="teaching-entry">
+                        <div class="course-info">Postdoctoral Scholars Mentored:</div>
+                        <div class="student-count">3 current, 2 alumni (both now tenure-track faculty)</div>
+                    </div>
+                </div>
+
+                <!-- Professional Service -->
+                <div class="section">
+                    <div class="section-title">Professional Service</div>
+
+                    <div class="service-item">
+                        <span class="service-role">Associate Editor:</span> Journal of Computational Neuroscience (2023-Present)
+                    </div>
+
+                    <div class="service-item">
+                        <span class="service-role">Editorial Board:</span> Neural Networks, Frontiers in Computational Neuroscience
+                    </div>
+
+                    <div class="service-item">
+                        <span class="service-role">Grant Reviewer:</span> NIH Study Section (CNNT), NSF Panel Reviewer
+                    </div>
+
+                    <div class="service-item">
+                        <span class="service-role">Conference Organization:</span> Program Committee, Computational and Systems Neuroscience (COSYNE) 2024
+                    </div>
+
+                    <div class="service-item">
+                        <span class="service-role">Journal Reviewer:</span> Nature Neuroscience, Neuron, PNAS, eLife, PLoS Computational Biology
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -371,11 +371,15 @@ function removeEntry(button) {
 function handleSubmit(e) {
     e.preventDefault();
 
+    // Disable submit button to prevent double submission
+    const submitButton = document.getElementById('submitBtn');
+    const originalText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+
     // Collect all form data
     const formData = new FormData(form);
     const data = {
-        account: {},
-        personal: {},
         education: [],
         experience: []
     };
@@ -402,32 +406,58 @@ function handleSubmit(e) {
                 if (!data.experience[index]) {
                     data.experience[index] = {};
                 }
-                data.experience[index][field] = value;
+                if (key.includes('[current]')) {
+                    data.experience[index][field] = value === 'on';
+                } else {
+                    data.experience[index][field] = value;
+                }
             }
-        } else {
-            // Store in appropriate category
-            if (['fullname', 'email', 'password'].includes(key)) {
-                data.account[key] = value;
-            } else {
-                data.personal[key] = value;
-            }
+        } else if (key !== 'confirm-password') {
+            data[key] = value;
         }
     }
 
     // Filter out empty education/experience entries
-    data.education = data.education.filter(e => e && e.institution);
-    data.experience = data.experience.filter(e => e && e.company);
+    data.education = data.education.filter(e => e && (e.institution || e.degree));
+    data.experience = data.experience.filter(e => e && (e.company || e.title));
 
-    // Store in localStorage (in real app, send to server)
-    localStorage.setItem('registrationData', JSON.stringify(data));
+    // Send to API
+    fetch('api/register.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showNotification(result.message);
+            setTimeout(() => {
+                window.location.href = result.redirect;
+            }, 1000);
+        } else {
+            showNotification(result.message);
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
 
-    // Show success message
-    showNotification('Registration completed successfully!');
-
-    // Redirect to dashboard
-    setTimeout(() => {
-        window.location.href = 'dashboard.html';
-    }, 1500);
+            // Show error message
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.textContent = result.message;
+                errorDiv.style.display = 'block';
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred. Please try again.');
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+    });
 }
 
 // Add animations

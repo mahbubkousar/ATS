@@ -1,3 +1,12 @@
+<?php
+require_once 'config/session.php';
+
+// Redirect if already logged in
+if (isLoggedIn()) {
+    header('Location: dashboard.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +27,7 @@
             <a href="index.html" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
-                <a href="score-checker.html" class="nav-link">ATS Checker</a>
+                <a href="score-checker.php" class="nav-link">ATS Checker</a>
                 <a href="about.html" class="nav-link">About</a>
             </div>
         </div>
@@ -55,6 +64,8 @@
                 <h1 class="auth-title" id="stepTitle">Create Your Account</h1>
                 <p class="auth-subtitle" id="stepSubtitle">Let's start with your basic information</p>
             </div>
+
+            <div id="errorMessage" style="background-color: #fee; border: 1px solid #fcc; color: #c33; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; display: none;"></div>
 
             <form class="auth-form multi-step-form" id="registrationForm">
                 <!-- Step 1: Account Information (Mandatory) -->
@@ -272,7 +283,7 @@
                 </div>
 
                 <div class="auth-footer">
-                    <p>Already have an account? <a href="login.html" class="auth-link">Sign in</a></p>
+                    <p>Already have an account? <a href="login.php" class="auth-link">Sign in</a></p>
                 </div>
             </form>
         </div>

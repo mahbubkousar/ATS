@@ -42,111 +42,185 @@ const downloadButtons = document.querySelectorAll('.btn-download');
 const shareButtons = document.querySelectorAll('.btn-share');
 
 downloadButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-        const resumeTitle = btn.closest('.resume-card').querySelector('.resume-title').textContent;
-        showNotification(`Downloading ${resumeTitle}...`);
-        // In real implementation: trigger download
+    btn.addEventListener('click', async (e) => {
+        const resumeId = e.target.closest('.btn-download-resume')?.dataset.resumeId;
+
+        if (resumeId) {
+            // Download saved resume - redirect to editor with auto-download
+            showNotification('Opening resume for PDF export...');
+            const editorUrl = `/ATS/editor.php?id=${resumeId}&download=true`;
+            window.open(editorUrl, '_blank');
+        } else {
+            showNotification('Download feature coming soon!');
+        }
     });
 });
 
 shareButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-        const resumeTitle = btn.closest('.resume-card').querySelector('.resume-title').textContent;
+    btn.addEventListener('click', async (e) => {
+        const resumeId = e.target.closest('.btn-share-resume')?.dataset.resumeId;
 
-        // Create share modal
-        const modal = createShareModal(resumeTitle);
-        document.body.appendChild(modal);
-
-        // Show modal with animation
-        setTimeout(() => modal.classList.add('active'), 10);
+        if (resumeId) {
+            currentResumeId = resumeId;
+            openShareModal(resumeId);
+        } else {
+            showNotification('Share feature coming soon!');
+        }
     });
 });
 
-// Create share modal
-function createShareModal(resumeTitle) {
-    const modal = document.createElement('div');
-    modal.className = 'share-modal';
-    modal.innerHTML = `
-        <div class="share-modal-overlay"></div>
-        <div class="share-modal-content">
-            <div class="share-modal-header">
-                <h3>Share Resume</h3>
-                <button class="share-modal-close">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="share-modal-body">
-                <p class="share-resume-title">${resumeTitle}</p>
-                <div class="share-link-container">
-                    <input type="text" class="share-link-input" value="https://resumesync.com/share/abc123xyz" readonly>
-                    <button class="btn-copy-link">
-                        <i class="fas fa-copy"></i> Copy
-                    </button>
-                </div>
-                <div class="share-options">
-                    <button class="share-option-btn" data-platform="email">
-                        <i class="fas fa-envelope"></i>
-                        <span>Email</span>
-                    </button>
-                    <button class="share-option-btn" data-platform="linkedin">
-                        <i class="fab fa-linkedin"></i>
-                        <span>LinkedIn</span>
-                    </button>
-                    <button class="share-option-btn" data-platform="twitter">
-                        <i class="fab fa-twitter"></i>
-                        <span>Twitter</span>
-                    </button>
-                    <button class="share-option-btn" data-platform="whatsapp">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>WhatsApp</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
+// Share functionality
+let currentResumeId = null;
+let currentShareUrl = null;
 
-    // Close modal handlers
-    const closeBtn = modal.querySelector('.share-modal-close');
-    const overlay = modal.querySelector('.share-modal-overlay');
+async function openShareModal(resumeId) {
+    currentResumeId = resumeId;
+    document.getElementById('shareModal').style.display = 'flex';
 
-    const closeModal = () => {
-        modal.classList.remove('active');
-        setTimeout(() => modal.remove(), 300);
-    };
+    // Check if resume already has a share link
+    try {
+        const response = await fetch(`/ATS/api/get-share-stats.php?resume_id=${resumeId}`);
+        const result = await response.json();
 
-    closeBtn.addEventListener('click', closeModal);
-    overlay.addEventListener('click', closeModal);
+        if (result.success && result.has_link) {
+            // Show existing link and stats
+            currentShareUrl = result.share_url;
+            document.getElementById('shareLink').value = result.share_url;
+            document.getElementById('viewCount').textContent = result.stats.view_count;
+            document.getElementById('downloadCount').textContent = result.stats.download_count;
+            document.getElementById('statusBadge').textContent = result.is_public ? 'Public' : 'Private';
 
-    // Copy link handler
-    const copyBtn = modal.querySelector('.btn-copy-link');
-    const linkInput = modal.querySelector('.share-link-input');
+            // Update toggle button
+            const toggleBtn = document.getElementById('togglePublicBtn');
+            if (result.is_public) {
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> <span id="publicToggleText">Make Private</span>';
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i> <span id="publicToggleText">Make Public</span>';
+            }
 
-    copyBtn.addEventListener('click', () => {
-        linkInput.select();
-        document.execCommand('copy');
-        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        copyBtn.style.background = '#10b981';
-        showNotification('Link copied to clipboard!');
-
-        setTimeout(() => {
-            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-            copyBtn.style.background = '';
-        }, 2000);
-    });
-
-    // Share option handlers
-    const shareOptionBtns = modal.querySelectorAll('.share-option-btn');
-    shareOptionBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const platform = btn.getAttribute('data-platform');
-            showNotification(`Sharing to ${platform.charAt(0).toUpperCase() + platform.slice(1)}...`);
-            // In real implementation: trigger platform-specific share
-            setTimeout(closeModal, 500);
-        });
-    });
-
-    return modal;
+            document.getElementById('shareContent').style.display = 'none';
+            document.getElementById('shareLinkSection').style.display = 'block';
+        } else {
+            // Show generate button
+            document.getElementById('shareContent').style.display = 'block';
+            document.getElementById('shareLinkSection').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error fetching share stats:', error);
+        // Show generate button on error
+        document.getElementById('shareContent').style.display = 'block';
+        document.getElementById('shareLinkSection').style.display = 'none';
+    }
 }
+
+function closeShareModal() {
+    document.getElementById('shareModal').style.display = 'none';
+    currentResumeId = null;
+    currentShareUrl = null;
+}
+
+// Generate share link
+document.getElementById('generateLinkBtn')?.addEventListener('click', async () => {
+    if (!currentResumeId) return;
+
+    try {
+        const response = await fetch('/ATS/api/generate-share-link.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ resume_id: currentResumeId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            currentShareUrl = result.share_url;
+            document.getElementById('shareLink').value = result.share_url;
+            document.getElementById('viewCount').textContent = result.stats.view_count;
+            document.getElementById('downloadCount').textContent = result.stats.download_count;
+            document.getElementById('statusBadge').textContent = result.is_public ? 'Public' : 'Private';
+
+            // Update toggle button based on status
+            const toggleBtn = document.getElementById('togglePublicBtn');
+            if (result.is_public) {
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> <span id="publicToggleText">Make Private</span>';
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i> <span id="publicToggleText">Make Public</span>';
+            }
+
+            document.getElementById('shareContent').style.display = 'none';
+            document.getElementById('shareLinkSection').style.display = 'block';
+
+            if (result.is_new_link) {
+                showNotification('Share link generated successfully!');
+            } else {
+                showNotification('Existing share link loaded!');
+            }
+        } else {
+            showNotification('Failed to generate share link');
+        }
+    } catch (error) {
+        console.error('Error generating share link:', error);
+        showNotification('Error generating share link');
+    }
+});
+
+// Copy link
+document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
+    const linkInput = document.getElementById('shareLink');
+    linkInput.select();
+    document.execCommand('copy');
+    showNotification('Link copied to clipboard!');
+});
+
+// Toggle public/private
+document.getElementById('togglePublicBtn')?.addEventListener('click', async () => {
+    if (!currentResumeId) return;
+
+    try {
+        const response = await fetch('/ATS/api/toggle-resume-public.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ resume_id: currentResumeId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const toggleBtn = document.getElementById('togglePublicBtn');
+            const statusBadge = document.getElementById('statusBadge');
+
+            if (result.is_public) {
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> <span id="publicToggleText">Make Private</span>';
+                statusBadge.textContent = 'Public';
+                statusBadge.parentElement.style.background = '#d1fae5';
+                statusBadge.style.color = '#065f46';
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i> <span id="publicToggleText">Make Public</span>';
+                statusBadge.textContent = 'Private';
+                statusBadge.parentElement.style.background = '#fee2e2';
+                statusBadge.style.color = '#991b1b';
+            }
+
+            showNotification(result.message);
+        } else {
+            showNotification('Failed to toggle resume visibility');
+        }
+    } catch (error) {
+        console.error('Error toggling visibility:', error);
+        showNotification('Error toggling resume visibility');
+    }
+});
+
+// Open link in new tab
+document.getElementById('openLinkBtn')?.addEventListener('click', () => {
+    if (currentShareUrl) {
+        window.open(currentShareUrl, '_blank');
+    }
+});
 
 // Create new resume button
 const createResumeBtn = document.getElementById('navCtaBtn');
@@ -208,6 +282,8 @@ resumeCards.forEach(card => {
 // Greeting based on time of day
 function updateGreeting() {
     const greeting = document.querySelector('.dashboard-greeting');
+    if (!greeting) return;
+
     const hour = new Date().getHours();
     let timeGreeting;
 
@@ -219,7 +295,12 @@ function updateGreeting() {
         timeGreeting = 'Good evening';
     }
 
-    greeting.textContent = `${timeGreeting}, User!`;
+    // Extract username from current greeting
+    const currentText = greeting.textContent;
+    const nameMatch = currentText.match(/Welcome back, (.+?)!/);
+    const userName = nameMatch ? nameMatch[1] : 'User';
+
+    greeting.textContent = `${timeGreeting}, ${userName}!`;
 }
 
 updateGreeting();
@@ -520,3 +601,106 @@ console.log('Dashboard loaded successfully');
 console.log('Keyboard shortcuts:');
 console.log('- Ctrl/Cmd + N: Create new resume');
 console.log('- Ctrl/Cmd + 1-6: Navigate to sidebar sections');
+
+// Notification Modal Functionality
+const notificationBtn = document.getElementById('notificationBtn');
+const notificationModal = document.getElementById('notificationModal');
+const notificationOverlay = document.getElementById('notificationOverlay');
+const closeNotificationModal = document.getElementById('closeNotificationModal');
+
+function openNotificationModal() {
+    notificationModal.classList.add('active');
+    notificationOverlay.classList.add('active');
+}
+
+function closeNotificationModalFunc() {
+    notificationModal.classList.remove('active');
+    notificationOverlay.classList.remove('active');
+}
+
+if (notificationBtn) {
+    notificationBtn.addEventListener('click', openNotificationModal);
+}
+
+if (closeNotificationModal) {
+    closeNotificationModal.addEventListener('click', closeNotificationModalFunc);
+}
+
+if (notificationOverlay) {
+    notificationOverlay.addEventListener('click', closeNotificationModalFunc);
+}
+
+// Mark notification as read when clicked
+const notificationItems = document.querySelectorAll('.notification-item');
+notificationItems.forEach(item => {
+    item.addEventListener('click', function() {
+        this.classList.remove('unread');
+        updateNotificationBadge();
+    });
+});
+
+// Update notification badge count
+function updateNotificationBadge() {
+    const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+    const badge = document.getElementById('notificationBadge');
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && notificationModal.classList.contains('active')) {
+        closeNotificationModalFunc();
+    }
+});
+
+// Mark notification as read and view application
+async function markAsReadAndView(notificationId, applicationId) {
+    // Mark notification as read
+    try {
+        await fetch('/ATS/api/mark-notification-read.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ notification_id: notificationId })
+        });
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+    }
+
+    // Close notification modal
+    closeNotificationModalFunc();
+
+    // Switch to applications tab
+    switchTab('applications');
+
+    // Scroll to the specific application after a short delay to allow tab switch
+    setTimeout(() => {
+        const applicationCard = document.querySelector(`.application-card[data-application-id="${applicationId}"]`);
+        if (applicationCard) {
+            applicationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Highlight the card briefly
+            applicationCard.style.boxShadow = '0 0 0 3px rgba(124, 58, 237, 0.3)';
+            setTimeout(() => {
+                applicationCard.style.boxShadow = '';
+            }, 2000);
+        }
+    }, 300);
+
+    // Reload page after a delay to update notification count
+    setTimeout(() => {
+        location.reload();
+    }, 2500);
+}
+
+// View application from notification (legacy - for compatibility)
+function viewApplication(applicationId) {
+    markAsReadAndView(null, applicationId);
+}

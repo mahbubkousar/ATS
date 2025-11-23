@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Resume Template</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: white;
+        }
+        .resume-container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px;
+            background: white;
+        }
+        .header {
+            margin-bottom: 35px;
+        }
+        .name {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #1a202c;
+        }
+        .title {
+            font-size: 18px;
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        .contact-info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #718096;
+        }
+        .contact-info span::before {
+            content: "• ";
+            margin-right: 5px;
+        }
+        .contact-info span:first-child::before {
+            content: "";
+            margin-right: 0;
+        }
+        .section {
+            margin-bottom: 28px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #2d3748;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #4299e1;
+        }
+        .summary {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #4a5568;
+        }
+        .entry {
+            margin-bottom: 20px;
+        }
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 6px;
+        }
+        .entry-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #2d3748;
+        }
+        .entry-date {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 500;
+        }
+        .entry-company {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        .entry-description {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #4a5568;
+        }
+        .entry-description ul {
+            margin-left: 20px;
+            margin-top: 6px;
+        }
+        .entry-description li {
+            margin-bottom: 5px;
+        }
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        .skill-category {
+            background: #edf2f7;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border-left: 3px solid #4299e1;
+        }
+        .skill-category-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #2d3748;
+        }
+        .skill-items {
+            font-size: 12px;
+            color: #4a5568;
+        }
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .resume-container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <div class="header">
+            <div class="name" data-field="fullName">Sarah Johnson</div>
+            <div class="title" data-field="professionalTitle">Product Manager</div>
+            <div class="contact-info">
+                <span data-field="email">sarah.johnson@email.com</span>
+                <span data-field="phone">(555) 987-6543</span>
+                <span data-field="location">San Francisco, CA</span>
+                <span data-field="linkedin">linkedin.com/in/sarahjohnson</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Professional Summary</div>
+            <div class="summary" data-field="summary">
+                Strategic product manager with 7+ years of experience driving product vision and execution. Skilled in user research, data analysis, and cross-functional collaboration. Successfully launched 10+ products reaching millions of users.
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Work Experience</div>
+            <div data-field="experience">
+                <div class="entry">
+                    <div class="entry-header">
+                        <div class="entry-title">Senior Product Manager</div>
+                        <div class="entry-date">Mar 2021 - Present</div>
+                    </div>
+                    <div class="entry-company">Innovation Labs, San Francisco, CA</div>
+                    <div class="entry-description">
+                        <ul>
+                            <li>Led product strategy for flagship SaaS platform generating $5M ARR</li>
+                            <li>Increased user engagement by 45% through data-driven feature development</li>
+                            <li>Managed roadmap prioritization across 3 engineering teams</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Education</div>
+            <div data-field="education">
+                <div class="entry">
+                    <div class="entry-header">
+                        <div class="entry-title">MBA, Business Administration</div>
+                        <div class="entry-date">2017 - 2019</div>
+                    </div>
+                    <div class="entry-company">Stanford University, Stanford, CA</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Skills</div>
+            <div class="skills-grid" data-field="skills">
+                <div class="skill-category">
+                    <div class="skill-category-title">Product Strategy</div>
+                    <div class="skill-items">Roadmapping, OKRs, Market Analysis</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-category-title">Technical</div>
+                    <div class="skill-items">SQL, Analytics, A/B Testing</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-category-title">Design</div>
+                    <div class="skill-items">Figma, User Research, Wireframing</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

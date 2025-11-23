@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Resume Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Calibri', 'Arial', sans-serif;
+            color: #18181b;
+            line-height: 1.6;
+            background: white;
+        }
+
+        .resume-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 1.25in 1.25in 1in 1.25in;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px double #713f12;
+        }
+
+        .header h1 {
+            font-family: 'Georgia', serif;
+            font-size: 26pt;
+            font-weight: 700;
+            color: #18181b;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .header .executive-title {
+            font-size: 13pt;
+            color: #52525b;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .contact-info {
+            font-size: 10pt;
+            color: #71717a;
+            margin-top: 10px;
+        }
+
+        .contact-info span {
+            margin: 0 10px;
+        }
+
+        /* Executive Summary */
+        .executive-summary {
+            background: #fef3c7;
+            background: linear-gradient(to bottom, #fef3c7 0%, #ffffff 100%);
+            padding: 18px 20px;
+            border-left: 4px solid #713f12;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-family: 'Georgia', serif;
+            font-size: 13pt;
+            font-weight: 700;
+            color: #18181b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #713f12;
+        }
+
+        .summary-text {
+            font-size: 11pt;
+            color: #3f3f46;
+            line-height: 1.7;
+            text-align: justify;
+        }
+
+        /* Key Achievements */
+        .key-achievements {
+            background: #fafaf9;
+            padding: 18px 20px;
+            border: 1px solid #e7e5e4;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+
+        .achievement-list {
+            list-style: none;
+            margin-top: 12px;
+        }
+
+        .achievement-list li {
+            font-size: 10.5pt;
+            color: #3f3f46;
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .achievement-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 5px;
+            color: #713f12;
+            font-weight: bold;
+            font-size: 12pt;
+        }
+
+        .achievement-metric {
+            font-weight: 700;
+            color: #713f12;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 25px;
+        }
+
+        /* Experience */
+        .experience-item {
+            margin-bottom: 22px;
+            page-break-inside: avoid;
+        }
+
+        .experience-header {
+            margin-bottom: 8px;
+        }
+
+        .job-title {
+            font-family: 'Georgia', serif;
+            font-size: 12pt;
+            font-weight: 700;
+            color: #18181b;
+        }
+
+        .company {
+            font-size: 11pt;
+            color: #713f12;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .date-location {
+            font-size: 10pt;
+            color: #71717a;
+            font-style: italic;
+            margin-top: 3px;
+        }
+
+        .experience-description ul {
+            margin-left: 25px;
+            margin-top: 8px;
+        }
+
+        .experience-description li {
+            font-size: 10.5pt;
+            color: #3f3f46;
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        /* Education */
+        .education-item {
+            margin-bottom: 15px;
+        }
+
+        .degree {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #18181b;
+        }
+
+        .school {
+            font-size: 10.5pt;
+            color: #52525b;
+            margin-top: 2px;
+        }
+
+        .edu-details {
+            font-size: 10pt;
+            color: #71717a;
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        /* Board Memberships */
+        .board-item {
+            margin-bottom: 12px;
+        }
+
+        .board-title {
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: #18181b;
+        }
+
+        .board-org {
+            font-size: 10pt;
+            color: #52525b;
+        }
+
+        .board-date {
+            font-size: 9.5pt;
+            color: #71717a;
+            font-style: italic;
+        }
+
+        /* Core Competencies */
+        .competencies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .competency-item {
+            font-size: 10pt;
+            color: #18181b;
+            padding: 6px 12px;
+            background: white;
+            border: 1.5px solid #713f12;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .resume-container {
+                padding: 0.75in;
+            }
+
+            .executive-summary {
+                background: #fef3c7;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>JANE EXECUTIVE</h1>
+            <div class="executive-title">Chief Operations Officer | Strategic Leader</div>
+            <div class="contact-info">
+                <span>jane.executive@email.com</span> •
+                <span>(555) 987-6543</span> •
+                <span>San Francisco, CA</span> •
+                <span>linkedin.com/in/janeexecutive</span>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="executive-summary">
+            <div class="section-title">Executive Summary</div>
+            <p class="summary-text">
+                Strategic C-suite executive with 15+ years driving operational excellence and transformational growth for Fortune 500 companies.
+                Proven expertise in P&L management ($500M+ portfolios), organizational restructuring, and leading cross-functional teams of 200+.
+                Track record of delivering measurable results: 45% revenue growth, 30% cost reduction, and successful M&A integration of 3 acquisitions totaling $2B.
+            </p>
+        </div>
+
+        <!-- Key Achievements -->
+        <div class="key-achievements">
+            <div class="section-title">Key Achievements</div>
+            <ul class="achievement-list">
+                <li>Drove <span class="achievement-metric">$225M revenue growth</span> (45% increase) over 3 years through strategic market expansion and operational optimization</li>
+                <li>Led organizational transformation reducing operating costs by <span class="achievement-metric">$60M annually</span> (30% reduction) while improving service quality metrics by 25%</li>
+                <li>Orchestrated successful integration of 3 acquisitions totaling <span class="achievement-metric">$2B in enterprise value</span>, achieving 95% retention of key talent</li>
+                <li>Built and mentored high-performing leadership team of <span class="achievement-metric">50+ directors and VPs</span>, with 80% internal promotion rate</li>
+            </ul>
+        </div>
+
+        <!-- Professional Experience -->
+        <div class="section">
+            <div class="section-title">Professional Experience</div>
+
+            <div class="experience-item">
+                <div class="experience-header">
+                    <div class="job-title">Chief Operations Officer</div>
+                    <div class="company">Global Tech Corporation</div>
+                    <div class="date-location">January 2019 - Present | San Francisco, CA</div>
+                </div>
+                <div class="experience-description">
+                    <ul>
+                        <li>Oversee global operations across 15 countries with P&L responsibility for $500M+ annual revenue and 2,000+ employees</li>
+                        <li>Spearheaded digital transformation initiative resulting in 40% improvement in operational efficiency and $45M cost savings</li>
+                        <li>Established strategic partnerships with key vendors, negotiating contracts yielding $25M in annual savings</li>
+                        <li>Implemented data-driven decision framework improving forecast accuracy from 70% to 94%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="experience-item">
+                <div class="experience-header">
+                    <div class="job-title">Senior Vice President, Operations</div>
+                    <div class="company">Enterprise Solutions Inc.</div>
+                    <div class="date-location">March 2015 - December 2018 | New York, NY</div>
+                </div>
+                <div class="experience-description">
+                    <ul>
+                        <li>Managed operations for North American division generating $300M in annual revenue with team of 800+ employees</li>
+                        <li>Led post-merger integration of $800M acquisition, achieving synergy targets 6 months ahead of schedule</li>
+                        <li>Redesigned supply chain operations reducing inventory costs by $18M while improving delivery times by 35%</li>
+                        <li>Championed diversity and inclusion initiatives increasing women in leadership roles from 15% to 42%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="experience-item">
+                <div class="experience-header">
+                    <div class="job-title">Vice President, Strategy & Operations</div>
+                    <div class="company">Consulting Partners LLC</div>
+                    <div class="date-location">June 2010 - February 2015 | Chicago, IL</div>
+                </div>
+                <div class="experience-description">
+                    <ul>
+                        <li>Directed strategic planning and operational improvements for Fortune 500 clients across multiple industries</li>
+                        <li>Developed and executed turnaround strategy for struggling $150M division, returning to profitability within 18 months</li>
+                        <li>Led cross-functional teams delivering $100M+ in client value through process optimization and technology implementation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Education & Credentials -->
+        <div class="section">
+            <div class="section-title">Education & Credentials</div>
+
+            <div class="education-item">
+                <div class="degree">Master of Business Administration (MBA)</div>
+                <div class="school">Harvard Business School</div>
+                <div class="edu-details">Graduated with Distinction | Boston, MA | 2010</div>
+            </div>
+
+            <div class="education-item">
+                <div class="degree">Bachelor of Science in Industrial Engineering</div>
+                <div class="school">Stanford University</div>
+                <div class="edu-details">Summa Cum Laude | Stanford, CA | 2005</div>
+            </div>
+        </div>
+
+        <!-- Board Memberships & Advisory Roles -->
+        <div class="section">
+            <div class="section-title">Board Memberships & Advisory Roles</div>
+
+            <div class="board-item">
+                <div class="board-title">Board of Directors</div>
+                <div class="board-org">TechStart Ventures - Early Stage VC Fund</div>
+                <div class="board-date">2020 - Present</div>
+            </div>
+
+            <div class="board-item">
+                <div class="board-title">Advisory Board Member</div>
+                <div class="board-org">Women in Leadership Foundation</div>
+                <div class="board-date">2018 - Present</div>
+            </div>
+        </div>
+
+        <!-- Core Competencies -->
+        <div class="section">
+            <div class="section-title">Core Competencies</div>
+            <div class="competencies">
+                <span class="competency-item">P&L Management</span>
+                <span class="competency-item">Strategic Planning</span>
+                <span class="competency-item">Operational Excellence</span>
+                <span class="competency-item">M&A Integration</span>
+                <span class="competency-item">Change Management</span>
+                <span class="competency-item">Team Leadership</span>
+                <span class="competency-item">Digital Transformation</span>
+                <span class="competency-item">Process Optimization</span>
+                <span class="competency-item">Supply Chain Management</span>
+                <span class="competency-item">Stakeholder Relations</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

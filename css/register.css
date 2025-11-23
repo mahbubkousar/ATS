@@ -288,6 +288,7 @@
 @media (max-width: 768px) {
     .multi-step-card {
         padding: 2rem 1.5rem;
+        border-radius: 20px;
     }
 
     .progress-container {
@@ -296,44 +297,71 @@
     }
 
     .step-number {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         font-size: 0.9rem;
     }
 
     .step-label {
-        font-size: 0.7rem;
+        font-size: 0.725rem;
     }
 
     .progress-line {
-        margin: 0 0.25rem;
+        margin: 0 0.35rem;
+    }
+
+    .auth-header {
+        margin-bottom: 2rem;
+    }
+
+    .auth-title {
+        font-size: 1.65rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.9rem;
     }
 
     .form-row {
         grid-template-columns: 1fr;
+        gap: 1.25rem;
     }
 
     .education-entry,
     .experience-entry {
-        padding: 1.25rem;
+        padding: 1.35rem;
+        border-radius: 10px;
+    }
+
+    .entry-header {
+        margin-bottom: 1.15rem;
+        padding-bottom: 0.85rem;
+    }
+
+    .optional-badge {
+        padding: 0.85rem 1.15rem;
+        margin-bottom: 1.35rem;
     }
 
     .form-navigation {
         flex-direction: column;
+        gap: 0.875rem;
     }
 
     .btn-nav {
         width: 100%;
+        padding: 0.85rem 1.35rem;
     }
 }
 
 @media (max-width: 480px) {
     .multi-step-card {
-        padding: 1.5rem 1rem;
+        padding: 1.75rem 1.15rem;
+        border-radius: 18px;
     }
 
     .progress-container {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.65rem;
         padding-bottom: 1.25rem;
     }
 
@@ -342,68 +370,157 @@
     }
 
     .step-number {
-        width: 35px;
-        height: 35px;
+        width: 36px;
+        height: 36px;
         font-size: 0.85rem;
+        border-width: 1.5px;
     }
 
     .step-label {
-        font-size: 0.65rem;
+        font-size: 0.675rem;
     }
 
     .progress-line {
         flex: 1;
-        min-width: 10px;
-        margin: 0 0.15rem;
+        min-width: 12px;
+        margin: 0 0.2rem;
     }
 
     .auth-header {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.65rem;
     }
 
     .auth-title {
         font-size: 1.5rem;
+        line-height: 1.3;
     }
 
     .auth-subtitle {
-        font-size: 0.85rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .form-step {
+        padding: 0 0.15rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.15rem;
+    }
+
+    .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.45rem;
+    }
+
+    .auth-input {
+        padding: 0.8rem 0.95rem;
+        font-size: 0.95rem;
+        border-radius: 10px;
+    }
+
+    .auth-textarea {
+        min-height: 75px;
     }
 
     .optional-badge {
-        padding: 0.75rem 1rem;
+        padding: 0.8rem 1.05rem;
+        margin-bottom: 1.35rem;
+        border-radius: 8px;
+    }
+
+    .optional-badge i {
+        font-size: 0.95rem;
     }
 
     .optional-badge span {
         font-size: 0.8rem;
+        line-height: 1.5;
     }
 
     .education-entry,
     .experience-entry {
-        padding: 1rem;
+        padding: 1.15rem;
+        margin-bottom: 1.25rem;
+        border-radius: 10px;
     }
 
     .entry-header {
-        margin-bottom: 1rem;
-        padding-bottom: 0.75rem;
+        margin-bottom: 1.1rem;
+        padding-bottom: 0.8rem;
     }
 
     .entry-header h4 {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-remove-entry {
+        width: 30px;
+        height: 30px;
     }
 
     .btn-add-entry {
-        padding: 0.65rem 1.25rem;
-        font-size: 0.8rem;
+        padding: 0.7rem 1.35rem;
+        font-size: 0.825rem;
+        border-radius: 8px;
     }
 
     .form-navigation {
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
+        margin-top: 1.65rem;
+        padding-top: 1.65rem;
         gap: 0.75rem;
     }
 
     .btn-nav {
-        padding: 0.75rem 1.25rem;
-        font-size: 0.85rem;
+        padding: 0.8rem 1.35rem;
+        font-size: 0.875rem;
+        border-radius: 8px;
+    }
+
+    .auth-footer {
+        margin-top: 1.15rem;
+    }
+
+    .auth-footer p {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .multi-step-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .step-number {
+        width: 34px;
+        height: 34px;
+        font-size: 0.8rem;
+    }
+
+    .step-label {
+        font-size: 0.625rem;
+    }
+
+    .progress-line {
+        min-width: 8px;
+        margin: 0 0.15rem;
+    }
+
+    .auth-title {
+        font-size: 1.35rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.825rem;
+    }
+
+    .auth-input {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-nav {
+        padding: 0.75rem 1.2rem;
+        font-size: 0.825rem;
     }
 }

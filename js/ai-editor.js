@@ -280,8 +280,60 @@ if (refreshBtn) {
 
 // Download
 if (downloadBtn) {
-    downloadBtn.addEventListener('click', () => {
-        showNotification('Download feature coming soon!');
+    downloadBtn.addEventListener('click', async () => {
+        try {
+            // Get the preview iframe
+            if (!resumePreview || !resumePreview.contentWindow) {
+                showNotification('Preview not loaded yet');
+                return;
+            }
+
+            const previewDoc = resumePreview.contentDocument || resumePreview.contentWindow.document;
+            if (!previewDoc) {
+                showNotification('Cannot access preview content');
+                return;
+            }
+
+            showNotification('Generating PDF...');
+
+            // Get the resume container from iframe
+            const resumeContainer = previewDoc.querySelector('.resume-container') || previewDoc.body;
+
+            // Use html2canvas to capture the preview with high quality
+            const canvas = await html2canvas(resumeContainer, {
+                scale: 2, // Higher quality
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                windowWidth: 850, // Standard resume width
+                windowHeight: resumeContainer.scrollHeight
+            });
+
+            // Calculate PDF dimensions (US Letter: 8.5 x 11 inches)
+            const imgWidth = 210; // A4 width in mm (close to Letter)
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            // Create PDF using jsPDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'letter'
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, '', 'FAST');
+
+            // Download PDF
+            const fullName = previewDoc.querySelector('[data-field="name"]')?.textContent || 'AI_Generated_Resume';
+            const filename = fullName.replace(/[^a-zA-Z0-9_\-\.]/g, '_') + '_Resume.pdf';
+            pdf.save(filename);
+
+            showNotification('PDF downloaded successfully!');
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            showNotification('Error downloading PDF');
+        }
     });
 }
 
