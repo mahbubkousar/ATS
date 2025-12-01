@@ -296,6 +296,6 @@ if (isLoggedIn()) {
     </footer>
 
     <script src="js/app.js"></script>
-    <script src="js/register.js"></script>
+    <script src="js/register.js?v=2"></script>
 </body>
 </html>

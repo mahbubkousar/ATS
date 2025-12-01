@@ -36,6 +36,46 @@ body {
     font-size: 14px;
     width: 100%;
     max-width: 100vw;
+    position: relative;
+}
+
+/* Geometric background elements for entire page */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    right: -20%;
+    width: 800px;
+    height: 800px;
+    background-image:
+        radial-gradient(circle at 2px 2px, rgba(124, 58, 237, 0.15) 2px, transparent 2px);
+    background-size: 60px 60px;
+    transform: rotate(-15deg);
+    z-index: 0;
+    pointer-events: none;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -30%;
+    left: -15%;
+    width: 700px;
+    height: 700px;
+    background-image:
+        radial-gradient(circle at 1.5px 1.5px, rgba(109, 40, 217, 0.12) 1.5px, transparent 1.5px);
+    background-size: 50px 50px;
+    transform: rotate(20deg);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Hide background art on editor pages */
+body.editor-body::before,
+body.editor-body::after,
+body.ai-editor-body::before,
+body.ai-editor-body::after {
+    display: none;
 }
 
 html {
@@ -49,6 +89,8 @@ html {
     padding: 0 1.25rem;
     width: 100%;
     box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 }
 
 /* Floating Navbar */
@@ -301,32 +343,77 @@ html {
     background: var(--bg-light);
     position: relative;
     padding: 8rem 0 3rem 0;
+    overflow: hidden;
 }
 
+/* Sophisticated Dot Grid - Concentrated around hero text */
 .hero::before {
     content: '';
     position: absolute;
-    top: -30%;
-    right: -15%;
-    width: 700px;
-    height: 700px;
-    background: radial-gradient(circle, rgba(0, 0, 0, 0.03) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: float 6s ease-in-out infinite;
-    filter: blur(60px);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background-image:
+        /* Primary dot grid - varying opacity based on position */
+        radial-gradient(circle at 1px 1px, rgba(124, 58, 237, 0.4) 1px, transparent 1px),
+        radial-gradient(circle at 1px 1px, rgba(109, 40, 217, 0.25) 1px, transparent 1px);
+    background-size:
+        24px 24px,
+        48px 48px;
+    background-position:
+        0 0,
+        12px 12px;
+    /* Radial fade from center */
+    -webkit-mask-image: radial-gradient(ellipse 600px 400px at 50% 50%, black 0%, black 40%, transparent 75%);
+    mask-image: radial-gradient(ellipse 600px 400px at 50% 50%, black 0%, black 40%, transparent 75%);
+    z-index: 0;
+    pointer-events: none;
 }
 
 .hero::after {
     content: '';
     position: absolute;
-    bottom: -20%;
-    left: -10%;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: float 8s ease-in-out infinite reverse;
-    filter: blur(60px);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background-image:
+        /* Subtle radial glow around center */
+        radial-gradient(ellipse 700px 450px at 50% 50%, rgba(124, 58, 237, 0.1) 0%, transparent 60%),
+        /* Fine diagonal grid lines */
+        repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(124, 58, 237, 0.05) 100px, rgba(124, 58, 237, 0.05) 101px),
+        repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(109, 40, 217, 0.04) 100px, rgba(109, 40, 217, 0.04) 101px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Sophisticated accent dots - scattered strategically */
+.hero .container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        /* Accent dots - varying sizes and positions */
+        radial-gradient(circle 3px at 15% 20%, rgba(124, 58, 237, 0.5) 100%, transparent 100%),
+        radial-gradient(circle 3.5px at 85% 15%, rgba(109, 40, 217, 0.45) 100%, transparent 100%),
+        radial-gradient(circle 2.5px at 12% 75%, rgba(124, 58, 237, 0.42) 100%, transparent 100%),
+        radial-gradient(circle 3px at 88% 80%, rgba(109, 40, 217, 0.48) 100%, transparent 100%),
+        radial-gradient(circle 2px at 8% 45%, rgba(124, 58, 237, 0.38) 100%, transparent 100%),
+        radial-gradient(circle 2.5px at 92% 50%, rgba(109, 40, 217, 0.4) 100%, transparent 100%),
+        radial-gradient(circle 2px at 30% 10%, rgba(124, 58, 237, 0.35) 100%, transparent 100%),
+        radial-gradient(circle 2.5px at 70% 90%, rgba(109, 40, 217, 0.38) 100%, transparent 100%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.hero .container::after {
+    content: none;
 }
 
 .hero-title {
@@ -413,6 +500,7 @@ html {
 /* Main */
 main {
     position: relative;
+    z-index: 1;
 }
 
 /* Features Section */
@@ -420,6 +508,38 @@ main {
     padding: 3.5rem 0 2.5rem;
     background: var(--bg-light);
     position: relative;
+    overflow: hidden;
+}
+
+/* Geometric decoration for features section */
+.features::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    left: 5%;
+    width: 300px;
+    height: 300px;
+    background-image:
+        radial-gradient(circle at 1px 1px, rgba(124, 58, 237, 0.14) 1px, transparent 1px);
+    background-size: 30px 30px;
+    transform: rotate(45deg);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.features::after {
+    content: '';
+    position: absolute;
+    bottom: 15%;
+    right: 8%;
+    width: 250px;
+    height: 250px;
+    background-image:
+        radial-gradient(circle at 1.5px 1.5px, rgba(109, 40, 217, 0.13) 1.5px, transparent 1.5px);
+    background-size: 35px 35px;
+    transform: rotate(-30deg);
+    z-index: 0;
+    pointer-events: none;
 }
 
 .features-main-title {
@@ -455,6 +575,8 @@ main {
     gap: 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 .feature-card {
@@ -465,6 +587,7 @@ main {
     cursor: pointer;
     border: 1px solid var(--border-color);
     position: relative;
+    z-index: 1;
     overflow: hidden;
     box-shadow: var(--shadow);
 }

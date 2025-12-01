@@ -28,7 +28,7 @@ if (!$conn) {
 
 try {
     // Ensure the experience belongs to the current user
-    $stmt = $conn->prepare("DELETE FROM work_experience WHERE id = ? AND user_id = ?");
+    $stmt = $conn->prepare("DELETE FROM user_experience WHERE experience_id = ? AND user_id = ?");
     $stmt->bind_param("ii", $experienceId, $userId);
 
     if ($stmt->execute()) {

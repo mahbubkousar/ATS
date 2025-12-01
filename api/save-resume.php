@@ -13,7 +13,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+// Check if data is sent as JSON or FormData
+$contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+if (strpos($contentType, 'application/json') !== false) {
+    $input = json_decode(file_get_contents('php://input'), true);
+} else {
+    // FormData or regular POST
+    $input = $_POST;
+    // Parse JSON strings in FormData
+    if (isset($input['personal_details']) && is_string($input['personal_details'])) {
+        $input['personal_details'] = json_decode($input['personal_details'], true);
+    }
+}
 
 $resumeId = $input['resume_id'] ?? null;
 $resumeTitle = trim($input['resume_title'] ?? '');

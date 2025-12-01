@@ -377,6 +377,9 @@ function handleSubmit(e) {
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
 
+    // Get the form element
+    const form = document.getElementById('registrationForm');
+
     // Collect all form data
     const formData = new FormData(form);
     const data = {

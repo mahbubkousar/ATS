@@ -15,6 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 
+// Log received data for debugging
+error_log("Add Education Input: " . print_r($input, true));
+error_log("User ID: " . $userId);
+
 $institution = trim($input['institution'] ?? '');
 $degree = trim($input['degree'] ?? '');
 $field = trim($input['field'] ?? '');
@@ -22,8 +26,13 @@ $startDate = $input['start_date'] ?? null;
 $endDate = $input['end_date'] ?? null;
 $gpa = trim($input['gpa'] ?? '');
 
-if (empty($institution) || empty($degree)) {
-    echo json_encode(['success' => false, 'message' => 'Institution and degree are required']);
+// Convert empty strings to null for dates
+if (empty($startDate)) $startDate = null;
+if (empty($endDate)) $endDate = null;
+if (empty($gpa)) $gpa = null;
+
+if (empty($institution)) {
+    echo json_encode(['success' => false, 'message' => 'Institution is required']);
     exit();
 }
 
@@ -34,7 +43,13 @@ if (!$conn) {
 }
 
 try {
-    $stmt = $conn->prepare("INSERT INTO education (user_id, institution, degree, field, start_date, end_date, gpa) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO user_education (user_id, institution_name, degree, field_of_study, start_date, end_date, gpa) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'SQL Error: ' . $conn->error]);
+        exit();
+    }
+
     $stmt->bind_param("issssss", $userId, $institution, $degree, $field, $startDate, $endDate, $gpa);
 
     if ($stmt->execute()) {

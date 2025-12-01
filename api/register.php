@@ -92,18 +92,22 @@ if (!empty($input['education']) && is_array($input['education'])) {
 
     foreach ($input['education'] as $edu) {
         if (!empty($edu['institution']) || !empty($edu['degree'])) {
+            $institution = $edu['institution'] ?? null;
+            $degree = $edu['degree'] ?? null;
+            $field = $edu['field'] ?? null;
             $startDate = !empty($edu['startDate']) ? $edu['startDate'] . '-01' : null;
             $endDate = !empty($edu['endDate']) ? $edu['endDate'] . '-01' : null;
+            $gpa = $edu['gpa'] ?? null;
 
             $stmt->bind_param(
                 "issssss",
                 $userId,
-                $edu['institution'] ?? null,
-                $edu['degree'] ?? null,
-                $edu['field'] ?? null,
+                $institution,
+                $degree,
+                $field,
                 $startDate,
                 $endDate,
-                $edu['gpa'] ?? null
+                $gpa
             );
             $stmt->execute();
         }
@@ -117,20 +121,24 @@ if (!empty($input['experience']) && is_array($input['experience'])) {
 
     foreach ($input['experience'] as $exp) {
         if (!empty($exp['company']) || !empty($exp['title'])) {
+            $company = $exp['company'] ?? null;
+            $title = $exp['title'] ?? null;
+            $location = $exp['location'] ?? null;
             $startDate = !empty($exp['startDate']) ? $exp['startDate'] . '-01' : null;
             $endDate = !empty($exp['endDate']) ? $exp['endDate'] . '-01' : null;
             $isCurrent = isset($exp['current']) && $exp['current'] ? 1 : 0;
+            $description = $exp['description'] ?? null;
 
             $stmt->bind_param(
                 "isssssss",
                 $userId,
-                $exp['company'] ?? null,
-                $exp['title'] ?? null,
-                $exp['location'] ?? null,
+                $company,
+                $title,
+                $location,
                 $startDate,
                 $endDate,
                 $isCurrent,
-                $exp['description'] ?? null
+                $description
             );
             $stmt->execute();
         }

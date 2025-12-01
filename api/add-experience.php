@@ -40,8 +40,14 @@ if (!$conn) {
 }
 
 try {
-    $stmt = $conn->prepare("INSERT INTO work_experience (user_id, title, company, location, start_date, end_date, is_current, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("isssssss", $userId, $title, $company, $location, $startDate, $endDate, $isCurrent, $description);
+    $stmt = $conn->prepare("INSERT INTO user_experience (user_id, job_title, company_name, location, start_date, end_date, current_position, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'SQL Error: ' . $conn->error]);
+        exit();
+    }
+
+    $stmt->bind_param("isssssis", $userId, $title, $company, $location, $startDate, $endDate, $isCurrent, $description);
 
     if ($stmt->execute()) {
         echo json_encode([

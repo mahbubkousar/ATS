@@ -28,7 +28,7 @@ if (!$conn) {
 
 try {
     // Ensure the education belongs to the current user
-    $stmt = $conn->prepare("DELETE FROM education WHERE id = ? AND user_id = ?");
+    $stmt = $conn->prepare("DELETE FROM user_education WHERE education_id = ? AND user_id = ?");
     $stmt->bind_param("ii", $educationId, $userId);
 
     if ($stmt->execute()) {

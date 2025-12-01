@@ -413,7 +413,7 @@ $resumeCount = count($resumes);
                                         <span><i class="fas fa-layer-group"></i> <?php echo htmlspecialchars($resume['template_name']); ?></span>
                                     </p>
                                     <div class="resume-actions">
-                                        <a href="editor.php?id=<?php echo $resume['resume_id']; ?>" class="btn-edit" style="text-decoration: none;">
+                                        <a href="editor-<?php echo $resume['template_name'] ?? 'classic'; ?>.php?id=<?php echo $resume['resume_id']; ?>" class="btn-edit" style="text-decoration: none;">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
                                         <button class="btn-download btn-download-resume" data-resume-id="<?php echo $resume['resume_id']; ?>">
@@ -460,7 +460,7 @@ $resumeCount = count($resumes);
                                 </p>
 
                                 <div class="resume-actions">
-                                    <a href="editor.php?id=<?php echo $resume['resume_id']; ?>" class="btn-edit" style="text-decoration: none;">
+                                    <a href="editor-<?php echo $resume['template_name'] ?? 'classic'; ?>.php?id=<?php echo $resume['resume_id']; ?>" class="btn-edit" style="text-decoration: none;">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
                                     <button class="btn-download btn-download-resume" data-resume-id="<?php echo $resume['resume_id']; ?>">
@@ -489,7 +489,7 @@ $resumeCount = count($resumes);
                     <div class="template-card" data-template="classic">
                         <div class="template-badge featured">Most Popular</div>
                         <div class="template-preview">
-                            <iframe src="templates/classic.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/classic.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
@@ -513,7 +513,7 @@ $resumeCount = count($resumes);
                     <div class="template-card" data-template="modern">
                         <div class="template-badge new">Recommended</div>
                         <div class="template-preview">
-                            <iframe src="templates/modern.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/modern.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
@@ -536,7 +536,7 @@ $resumeCount = count($resumes);
                     </div>
                     <div class="template-card" data-template="professional">
                         <div class="template-preview">
-                            <iframe src="templates/professional.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/professional.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
@@ -560,7 +560,7 @@ $resumeCount = count($resumes);
                     <div class="template-card" data-template="executive">
                         <div class="template-badge premium">Premium</div>
                         <div class="template-preview">
-                            <iframe src="templates/executive.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/executive.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
@@ -584,7 +584,7 @@ $resumeCount = count($resumes);
                     <div class="template-card" data-template="technical">
                         <div class="template-badge new">New</div>
                         <div class="template-preview">
-                            <iframe src="templates/technical.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/technical.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
@@ -608,7 +608,7 @@ $resumeCount = count($resumes);
                     <div class="template-card" data-template="creative">
                         <div class="template-badge new">New</div>
                         <div class="template-preview">
-                            <iframe src="templates/creative.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/creative.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
@@ -632,7 +632,7 @@ $resumeCount = count($resumes);
                     <div class="template-card" data-template="academic-standard">
                         <div class="template-badge academic">Academic</div>
                         <div class="template-preview">
-                            <iframe src="templates/academic-standard.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/academic-standard.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
@@ -656,7 +656,7 @@ $resumeCount = count($resumes);
                     <div class="template-card" data-template="research-scientist">
                         <div class="template-badge academic">Academic</div>
                         <div class="template-preview">
-                            <iframe src="templates/research-scientist.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/research-scientist.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
@@ -680,7 +680,7 @@ $resumeCount = count($resumes);
                     <div class="template-card" data-template="teaching-faculty">
                         <div class="template-badge academic">Academic</div>
                         <div class="template-preview">
-                            <iframe src="templates/teaching-faculty.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
+                            <iframe src="templates/teaching-faculty.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">

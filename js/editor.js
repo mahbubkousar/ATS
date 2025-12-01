@@ -53,12 +53,27 @@ const TEMPLATE_CONFIG = {
 
 // Initialize editor
 document.addEventListener('DOMContentLoaded', () => {
-    initializeEditor();
-    loadTemplatePreview();
-    setupEventListeners();
+    // Show template selection modal if this is a new resume (no ID in URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const resumeId = urlParams.get('id');
+
+    console.log('Resume ID:', resumeId);
+    console.log('Template name:', currentResumeData.template_name);
+    console.log('Should show modal?', !resumeId && !currentResumeData.template_name);
+
+    if (!resumeId && !currentResumeData.template_name) {
+        // New resume - show template selection modal
+        console.log('Showing template selection modal...');
+        showTemplateSelectionModal();
+    } else {
+        // Existing resume or template already selected - proceed normally
+        console.log('Loading editor normally...');
+        initializeEditor();
+        loadTemplatePreview();
+        setupEventListeners();
+    }
 
     // Check if auto-download is requested
-    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('download') === 'true') {
         // Wait for preview to load, then auto-download
         setTimeout(() => {
@@ -66,6 +81,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000); // Give preview time to render
     }
 });
+
+// Template Selection Modal Functions
+function showTemplateSelectionModal() {
+    const modal = document.getElementById('templateSelectionModal');
+    if (modal) {
+        modal.classList.add('show');
+
+        // Add click handlers to all template selection buttons
+        const selectBtns = modal.querySelectorAll('.select-template-btn');
+        selectBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const templateName = btn.dataset.template;
+                selectTemplate(templateName);
+            });
+        });
+    }
+}
+
+function selectTemplate(templateName) {
+    console.log('Template selected:', templateName);
+
+    // Redirect to the template-specific editor page
+    const currentUrl = new URL(window.location.href);
+    const resumeId = currentUrl.searchParams.get('id');
+
+    // Build the new URL for the template-specific editor
+    let editorUrl = `/ATS/editor-${templateName}.php`;
+    if (resumeId) {
+        editorUrl += `?id=${resumeId}`;
+    }
+
+    // Redirect to the template-specific editor
+    window.location.href = editorUrl;
+}
 
 function initializeEditor() {
     // Load experience and education from user database
@@ -608,29 +657,8 @@ function setupEventListeners() {
     document.getElementById('addTeachingBtn')?.addEventListener('click', addTeachingItem);
     document.getElementById('addReferenceBtn')?.addEventListener('click', addReferenceItem);
 
-    // Template selection
-    document.getElementById('templateSelect')?.addEventListener('change', (e) => {
-        currentResumeData.template_name = e.target.value;
-        document.getElementById('currentTemplateName').textContent = e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1);
-        adjustFieldsForTemplate(e.target.value);
-        loadTemplatePreview();
-    });
-
-    // Change Template button - opens the template dropdown
-    document.getElementById('changeTemplateBtn')?.addEventListener('click', () => {
-        const templateSelect = document.getElementById('templateSelect');
-        if (templateSelect) {
-            // Scroll to template selector
-            templateSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Focus on the select to open it
-            templateSelect.focus();
-            // Add a brief highlight effect
-            templateSelect.style.boxShadow = '0 0 0 4px rgba(124, 58, 237, 0.2)';
-            setTimeout(() => {
-                templateSelect.style.boxShadow = '';
-            }, 1500);
-        }
-    });
+    // Template is now locked - no change listener needed
+    // User must select template at the start and cannot change it
 
     // All form inputs (including template-specific ones)
     const formInputs = document.querySelectorAll('.form-input, .form-textarea');
@@ -650,31 +678,71 @@ function setupEventListeners() {
 
     // Job Description Toggle
     setupJobDescriptionToggle();
+
+    // AI Analysis button
+    document.querySelector('.analyze-btn')?.addEventListener('click', performAIAnalysis);
 }
 
 function loadTemplatePreview() {
     const iframe = document.getElementById('resumePreview');
     const templateName = currentResumeData.template_name || 'classic';
-    iframe.src = `/ATS/templates/${templateName}.html`;
+
+    // Set loading flag to prevent updates during load
+    isTemplateLoading = true;
+    console.log('Loading template:', templateName, '(isTemplateLoading = true)');
+
+    // Add timestamp to bust cache
+    const timestamp = new Date().getTime();
+    iframe.src = `/ATS/templates/${templateName}.html?v=${timestamp}`;
 
     // Update preview with data after iframe loads
     iframe.onload = () => {
-        updatePreview();
+        console.log('Template loaded, updating preview');
+        // Give the iframe a moment to fully render
+        setTimeout(() => {
+            isTemplateLoading = false;
+            console.log('Template ready (isTemplateLoading = false)');
+            updatePreview();
+        }, 100);
     };
 }
 
 let updateTimer;
+let isTemplateLoading = false;
+
 function debounceUpdatePreview() {
+    console.log('debounceUpdatePreview called, isTemplateLoading:', isTemplateLoading);
+    if (isTemplateLoading) {
+        console.log('Template is loading, skipping update');
+        return;
+    }
     clearTimeout(updateTimer);
     updateTimer = setTimeout(updatePreview, 300);
 }
 
 function updatePreview() {
+    console.log('updatePreview called');
     const iframe = document.getElementById('resumePreview');
-    if (!iframe || !iframe.contentWindow) return;
+    if (!iframe || !iframe.contentWindow) {
+        console.error('No iframe or contentWindow found');
+        return;
+    }
 
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    if (!iframeDoc) return;
+    if (!iframeDoc) {
+        console.error('No iframeDoc found');
+        return;
+    }
+    console.log('iframe and iframeDoc found, updating...');
+
+    // Debug: Check if template has data-field attributes
+    const nameField = iframeDoc.querySelector('[data-field="name"]');
+    console.log('Template has data-field="name"?', nameField ? 'YES' : 'NO');
+    if (!nameField) {
+        console.error('Template does not have data-field attributes! Template may not be loaded correctly.');
+        console.log('iframe src:', iframe.src);
+        console.log('iframeDoc body:', iframeDoc.body);
+    }
 
     // Get form values
     const formData = {
@@ -687,16 +755,31 @@ function updatePreview() {
         summary: document.getElementById('summary')?.value || ''
     };
 
+    // Field mapping (form field name -> template data-field attribute)
+    const fieldMapping = {
+        fullName: 'name',
+        professionalTitle: 'title',
+        email: 'email',
+        phone: 'phone',
+        location: 'location',
+        linkedin: 'linkedin',
+        summary: 'summary'
+    };
+
     // Update personal details
+    console.log('Form data:', formData);
     Object.keys(formData).forEach(key => {
-        const element = iframeDoc.querySelector(`[data-field="${key}"]`);
+        const templateField = fieldMapping[key] || key;
+        const element = iframeDoc.querySelector(`[data-field="${templateField}"]`);
+        console.log(`Looking for [data-field="${templateField}"], found:`, element);
         if (element) {
             element.textContent = formData[key];
+            console.log(`Updated ${key} to:`, formData[key]);
         }
     });
 
     // Update experience section
-    const expContainer = iframeDoc.querySelector('[data-field="experience"]');
+    const expContainer = iframeDoc.querySelector('[data-field="experience-list"]') || iframeDoc.querySelector('[data-field="experience"]');
     if (expContainer && experienceItems.length > 0) {
         expContainer.innerHTML = '';
         experienceItems.forEach(item => {
@@ -728,7 +811,7 @@ function updatePreview() {
     }
 
     // Update education section
-    const eduContainer = iframeDoc.querySelector('[data-field="education"]');
+    const eduContainer = iframeDoc.querySelector('[data-field="education-list"]') || iframeDoc.querySelector('[data-field="education"]');
     if (eduContainer && educationItems.length > 0) {
         eduContainer.innerHTML = '';
         educationItems.forEach(item => {
@@ -874,202 +957,70 @@ async function downloadPDF() {
         // Get the resume container from iframe
         const resumeContainer = iframeDoc.querySelector('.resume-container') || iframeDoc.body;
 
-        // Use html2canvas to capture the preview with high quality
-        const canvas = await html2canvas(resumeContainer, {
-            scale: 2, // Higher quality
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            windowWidth: 850, // Standard resume width
-            windowHeight: resumeContainer.scrollHeight
-        });
-
-        // Find intelligent break points AFTER capturing (to get correct scaling)
-        const canvasScale = canvas.height / resumeContainer.scrollHeight;
-        const breakPoints = findIntelligentBreakPoints(iframeDoc, resumeContainer, canvasScale);
-
         // Create PDF using jsPDF
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF({
             orientation: 'portrait',
-            unit: 'px',
-            format: 'letter',
-            hotfixes: ['px_scaling']
+            unit: 'pt',
+            format: 'letter'
         });
 
-        // PDF page dimensions in pixels
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+        // PDF page dimensions in points (72 DPI)
+        const pageWidth = 612; // 8.5 inches * 72
+        const pageHeight = 792; // 11 inches * 72
+        const margin = 36; // 0.5 inch margins
+        const contentWidth = pageWidth - (2 * margin);
+        const contentHeight = pageHeight - (2 * margin);
 
-        // Calculate how the canvas width should fit to PDF width
-        const ratio = pdfWidth / canvas.width;
-        const canvasHeight = canvas.height;
-        const scaledCanvasHeight = canvasHeight * ratio;
+        // Get all major content blocks that should not be split
+        const contentBlocks = getContentBlocks(iframeDoc, resumeContainer);
 
-        console.log(`Canvas: ${canvas.width}x${canvas.height}, PDF Page: ${pdfWidth}x${pdfHeight}, Ratio: ${ratio.toFixed(3)}`);
-        console.log(`Canvas scale: ${canvasScale.toFixed(3)}, Break points found: ${breakPoints.length}`);
-        console.log('All break points:', breakPoints.map(p => p.toFixed(0)));
+        console.log(`Found ${contentBlocks.length} content blocks to paginate`);
 
-        // If content fits in one page, just add it
-        if (scaledCanvasHeight <= pdfHeight) {
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, scaledCanvasHeight);
+        let currentPage = 0;
+        let currentY = margin;
 
-            const fullName = document.getElementById('fullName')?.value || 'Resume';
-            const filename = fullName.replace(/[^a-zA-Z0-9_\-\.]/g, '_') + '_Resume.pdf';
-            pdf.save(filename);
-            showNotification('PDF downloaded successfully! (1 page)');
-            return;
-        }
+        for (let i = 0; i < contentBlocks.length; i++) {
+            const block = contentBlocks[i];
 
-        // Multi-page PDF with intelligent breaks
-        let currentY = 0;
-        let pageNumber = 0;
-        const pageHeightCanvas = pdfHeight / ratio;
-        const topPadding = 60; // Top padding in canvas pixels for new pages (after page 1)
-        const topPaddingPDF = topPadding * ratio;
+            // Render this block to canvas
+            const blockCanvas = await html2canvas(block.element, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                windowWidth: 850
+            });
 
-        while (currentY < canvasHeight) {
-            if (pageNumber > 0) {
+            // Calculate dimensions in PDF points
+            const blockHeight = (blockCanvas.height / blockCanvas.width) * contentWidth;
+
+            // Check if block fits on current page
+            const spaceRemaining = (currentPage === 0 ? pageHeight : contentHeight) - (currentY - margin);
+
+            // If block doesn't fit and we're not at the start of a page, start new page
+            if (blockHeight > spaceRemaining && currentY > margin + 10) {
                 pdf.addPage();
+                currentPage++;
+                currentY = margin + 30; // Top margin for new pages (slightly larger)
+                console.log(`Page ${currentPage + 1}: Starting new page for ${block.type}`);
             }
 
-            // Calculate ideal page break position in canvas pixels
-            // For pages after the first, account for top padding
-            const availableHeight = pageNumber === 0 ? pageHeightCanvas : (pageHeightCanvas - topPadding);
-            let nextBreakY = Math.min(currentY + availableHeight, canvasHeight);
-
-            // Intelligent break point selection with scoring system
-            let bestBreak = null;
-            let bestScore = -Infinity;
-
-            // Define acceptable range for breaks
-            const minPageHeight = pageHeightCanvas * 0.75; // Don't break too early (75% of page)
-            const maxPageHeight = pageHeightCanvas * 1.10; // Can go slightly over (110% of page)
-            const minBreakY = currentY + minPageHeight;
-            const maxBreakY = Math.min(currentY + maxPageHeight, canvasHeight);
-
-            for (const breakPoint of breakPoints) {
-                // Only consider break points in acceptable range
-                if (breakPoint < minBreakY || breakPoint > maxBreakY) {
-                    continue;
-                }
-
-                // Calculate score for this break point
-                let score = 0;
-
-                // 1. Distance from ideal (closer is better) - weight: 40%
-                const distanceFromIdeal = Math.abs(breakPoint - nextBreakY);
-                const maxDistance = maxPageHeight - minPageHeight;
-                const distanceScore = (1 - (distanceFromIdeal / maxDistance)) * 40;
-                score += distanceScore;
-
-                // 2. Prefer breaks that are close to ideal but slightly before (not after) - weight: 20%
-                if (breakPoint <= nextBreakY) {
-                    score += 20;
-                } else {
-                    // Penalize going over ideal position
-                    const overageRatio = (breakPoint - nextBreakY) / (maxBreakY - nextBreakY);
-                    score += 20 * (1 - overageRatio);
-                }
-
-                // 3. Avoid very short or very long pages - weight: 20%
-                const pageUtilization = (breakPoint - currentY) / pageHeightCanvas;
-                if (pageUtilization >= 0.85 && pageUtilization <= 1.0) {
-                    score += 20; // Optimal utilization (85-100%)
-                } else if (pageUtilization >= 0.75 && pageUtilization < 0.85) {
-                    score += 15; // Good utilization (75-85%)
-                } else if (pageUtilization > 1.0 && pageUtilization <= 1.10) {
-                    score += 12; // Acceptable overage (100-110%)
-                } else {
-                    score += 5; // Poor utilization
-                }
-
-                // 4. Prefer breaks that give more even page distribution - weight: 20%
-                const remainingContent = canvasHeight - breakPoint;
-                const remainingPages = Math.ceil(remainingContent / pageHeightCanvas);
-                if (remainingPages > 0) {
-                    const avgRemainingPageHeight = remainingContent / remainingPages;
-                    const evenness = 1 - Math.abs(avgRemainingPageHeight - pageHeightCanvas) / pageHeightCanvas;
-                    score += evenness * 20;
-                } else {
-                    score += 20; // Last page
-                }
-
-                // Track best break point
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestBreak = breakPoint;
-                }
-            }
-
-            // Fallback: If no break found in acceptable range, find closest before max
-            if (bestBreak === null) {
-                let closestBefore = null;
-                for (const breakPoint of breakPoints) {
-                    if (breakPoint > currentY + 50 && breakPoint <= maxBreakY) {
-                        if (closestBefore === null || breakPoint > closestBefore) {
-                            closestBefore = breakPoint;
-                        }
-                    }
-                }
-                if (closestBefore !== null) {
-                    bestBreak = closestBefore;
-                    console.log(`Page ${pageNumber + 1}: Using fallback break at ${bestBreak.toFixed(0)} (ideal: ${nextBreakY.toFixed(0)}, score: N/A)`);
-                }
+            // If block is still too large for one page, split it intelligently
+            if (blockHeight > contentHeight) {
+                await renderLargeBlock(pdf, blockCanvas, block, currentY, margin, contentWidth, contentHeight, pageHeight);
+                currentPage = pdf.internal.getNumberOfPages() - 1;
+                currentY = margin + 30;
             } else {
-                const distance = Math.abs(bestBreak - nextBreakY);
-                const utilization = ((bestBreak - currentY) / pageHeightCanvas * 100).toFixed(1);
-                console.log(`Page ${pageNumber + 1}: Using intelligent break at ${bestBreak.toFixed(0)} (ideal: ${nextBreakY.toFixed(0)}, distance: ${distance.toFixed(0)}, score: ${bestScore.toFixed(1)}, utilization: ${utilization}%)`);
-            }
+                // Add the block to current page
+                const imgData = blockCanvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', margin, currentY, contentWidth, blockHeight);
+                currentY += blockHeight;
 
-            // Use the best break point if found, otherwise use default
-            if (bestBreak !== null) {
-                nextBreakY = bestBreak;
-            } else {
-                console.log(`Page ${pageNumber + 1}: WARNING - Using default break at ${nextBreakY.toFixed(0)} (NO suitable break points found)`);
-            }
-
-            // Calculate the height for this page
-            const sourceHeight = nextBreakY - currentY;
-
-            // Create a temporary canvas for this page slice
-            const pageCanvas = document.createElement('canvas');
-            pageCanvas.width = canvas.width;
-
-            // Add top padding for pages after the first
-            if (pageNumber > 0) {
-                pageCanvas.height = sourceHeight + topPadding;
-            } else {
-                pageCanvas.height = sourceHeight;
-            }
-
-            const pageCtx = pageCanvas.getContext('2d');
-
-            // Fill with white background
-            pageCtx.fillStyle = '#ffffff';
-            pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-
-            // Draw the slice from the original canvas (with top padding offset for pages > 0)
-            const destY = pageNumber > 0 ? topPadding : 0;
-            pageCtx.drawImage(
-                canvas,
-                0, currentY, canvas.width, sourceHeight,
-                0, destY, canvas.width, sourceHeight
-            );
-
-            // Add to PDF - scale to fit page width
-            const pageImgData = pageCanvas.toDataURL('image/png');
-            const imgHeight = pageCanvas.height * ratio;
-            pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, imgHeight);
-
-            currentY = nextBreakY;
-            pageNumber++;
-
-            // Safety check to prevent infinite loops
-            if (pageNumber > 50) {
-                console.error('Too many pages generated, stopping');
-                break;
+                // Add spacing after certain block types
+                if (block.type === 'section' || block.type === 'header') {
+                    currentY += 8; // Small gap after sections
+                }
             }
         }
 
@@ -1078,73 +1029,347 @@ async function downloadPDF() {
         const filename = fullName.replace(/[^a-zA-Z0-9_\-\.]/g, '_') + '_Resume.pdf';
         pdf.save(filename);
 
-        showNotification(`PDF downloaded successfully! (${pageNumber} page${pageNumber > 1 ? 's' : ''})`);
+        const totalPages = pdf.internal.getNumberOfPages();
+        showNotification(`PDF downloaded successfully! (${totalPages} page${totalPages > 1 ? 's' : ''})`);
     } catch (error) {
         console.error('Error downloading PDF:', error);
         showNotification('Error downloading PDF');
     }
 }
 
-function findIntelligentBreakPoints(iframeDoc, container, canvasScale) {
-    const breakPoints = [];
+// Get content blocks that should stay together
+function getContentBlocks(iframeDoc, container) {
+    const blocks = [];
 
-    // Selectors for elements that are good candidates for page breaks
-    const breakCandidates = [
-        '.section',           // Section breaks
-        '.entry',             // Experience/education entries
-        '.education-entry',   // Education entries
-        '.experience-entry',  // Experience entries
-        '.publication',       // Publications
-        '.grant',             // Grants
-        '.project-item',      // Projects
-        '.portfolio-item',    // Portfolio items
-        '.reference',         // References
-        '.board-item',        // Board memberships
-        'h2', 'h3',          // Headings
-        '.section-title',     // Section titles
-        '.degree-line',       // Academic degree lines
-        'hr'                  // Horizontal rules
-    ];
+    // Get all direct children of the container as the primary structure
+    const children = Array.from(container.children);
 
-    // Get the container's top position
-    const containerRect = container.getBoundingClientRect();
-    const scrollTop = container.scrollTop || 0;
+    console.log(`Container has ${children.length} direct children`);
 
-    // Get all potential break elements
-    breakCandidates.forEach(selector => {
-        const elements = container.querySelectorAll(selector);
-        elements.forEach(element => {
-            const rect = element.getBoundingClientRect();
+    children.forEach((child, index) => {
+        // Determine the type of block
+        let type = 'content';
 
-            // Calculate position relative to container top in actual pixels
-            const relativeTop = (rect.top - containerRect.top + scrollTop);
+        if (child.classList.contains('header') || child.classList.contains('resume-header') || child.tagName === 'HEADER') {
+            type = 'header';
+        } else if (child.classList.contains('section')) {
+            type = 'section';
+        } else if (child.classList.contains('summary') || child.classList.contains('professional-summary')) {
+            type = 'summary';
+        } else if (child.classList.contains('contact-info')) {
+            type = 'contact';
+        } else if (child.classList.contains('skills-section')) {
+            type = 'skills';
+        }
 
-            // Convert to canvas pixels using the scale
-            const canvasY = relativeTop * canvasScale;
-
-            // Only add if it's not at the very top (avoid break at 0)
-            if (canvasY > 100) { // At least 100px from top
-                breakPoints.push(canvasY);
-            }
-        });
+        // Only add visible elements with content
+        const rect = child.getBoundingClientRect();
+        if (rect.height > 5 && rect.width > 5) {
+            blocks.push({
+                element: child,
+                type,
+                index,
+                height: rect.height,
+                className: child.className
+            });
+            console.log(`Block ${index}: ${type} (${child.tagName}.${child.className}) - ${rect.height.toFixed(0)}px`);
+        } else {
+            console.log(`Skipping empty block ${index}: ${child.tagName}.${child.className}`);
+        }
     });
 
-    // Sort and remove duplicates (within 20px tolerance in canvas pixels)
-    breakPoints.sort((a, b) => a - b);
+    console.log(`Total blocks to render: ${blocks.length}`);
+    return blocks;
+}
 
-    const uniqueBreakPoints = [];
-    let lastPoint = -100;
+// Render blocks that are too large for a single page
+async function renderLargeBlock(pdf, canvas, block, startY, margin, contentWidth, contentHeight, pageHeight) {
+    const ratio = contentWidth / canvas.width;
+    const totalHeight = canvas.height * ratio;
+    const numSlices = Math.ceil(totalHeight / contentHeight);
 
-    for (const point of breakPoints) {
-        if (point - lastPoint > 20) { // At least 20px apart in canvas
-            uniqueBreakPoints.push(point);
-            lastPoint = point;
+    console.log(`Splitting large ${block.type} across ${numSlices} pages`);
+
+    for (let slice = 0; slice < numSlices; slice++) {
+        if (slice > 0) {
+            pdf.addPage();
+            startY = margin + 30;
         }
+
+        const sourceY = (slice * contentHeight) / ratio;
+        const sourceHeight = Math.min((contentHeight / ratio), canvas.height - sourceY);
+
+        // Create slice canvas
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sourceHeight;
+        const ctx = sliceCanvas.getContext('2d');
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+
+        ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+
+        const sliceData = sliceCanvas.toDataURL('image/png');
+        const sliceHeight = sourceHeight * ratio;
+        pdf.addImage(sliceData, 'PNG', margin, startY, contentWidth, sliceHeight);
+    }
+}
+
+// AI Analysis Function
+async function performAIAnalysis() {
+    try {
+        // Get job description
+        const jobDescText = document.getElementById('jobDescText')?.value.trim();
+        const jobDescFile = document.getElementById('jobDescFile')?.files[0];
+
+        if (!jobDescText && !jobDescFile) {
+            showNotification('Please provide a job description to analyze against');
+            return;
+        }
+
+        // Show loading state
+        const analyzeBtn = document.querySelector('.analyze-btn');
+        const originalText = analyzeBtn.innerHTML;
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
+
+        // Update score display
+        updateScoreDisplay('analyzing', '--', 'Analyzing your resume...');
+
+        // Generate resume text from current form data
+        const resumeText = generateResumeText();
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('resume_text', resumeText);
+
+        if (jobDescText) {
+            formData.append('job_description', jobDescText);
+        } else if (jobDescFile) {
+            formData.append('job_description_file', jobDescFile);
+        }
+
+        // Call API
+        console.log('Sending request to API...');
+        console.log('Resume text length:', resumeText.length);
+        console.log('Has job description:', !!jobDescText || !!jobDescFile);
+
+        const response = await fetch('/ATS/api/analyze-ats-score.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        console.log('Response status:', response.status);
+
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Failed to parse JSON:', e);
+            throw new Error('Invalid JSON response from server');
+        }
+
+        console.log('Parsed result:', result);
+
+        if (result.success) {
+            console.log('Success! Full API Response:', result);
+
+            // Data is nested inside 'analysis' object
+            const analysis = result.analysis || result;
+
+            console.log('Overall score:', analysis.overall_score);
+            console.log('Improvements:', analysis.improvements);
+            console.log('Keywords found:', analysis.keywords_found);
+            console.log('Keywords missing:', analysis.keywords_missing);
+
+            // Update score display
+            const score = analysis.overall_score || analysis.score || 0;
+            updateScoreDisplay('success', score, getScoreLabel(score));
+
+            // Display suggestions (API returns 'improvements' not 'suggestions')
+            displaySuggestions(
+                analysis.improvements || [],
+                analysis.keywords_found || [],
+                analysis.keywords_missing || []
+            );
+
+            showNotification('Analysis complete!');
+        } else {
+            console.error('API returned error:', result);
+            updateScoreDisplay('error', '--', 'Analysis failed');
+            showNotification('Error: ' + (result.message || 'Analysis failed'));
+        }
+
+    } catch (error) {
+        console.error('Analysis error:', error);
+        updateScoreDisplay('error', '--', 'Analysis failed');
+        showNotification('Failed to analyze resume. Please try again.');
+    } finally {
+        // Restore button
+        const analyzeBtn = document.querySelector('.analyze-btn');
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = 'Analyze Match';
+    }
+}
+
+// Generate resume text from current form data
+function generateResumeText() {
+    let text = '';
+
+    // Personal details
+    const fullName = document.getElementById('fullName')?.value || '';
+    const professionalTitle = document.getElementById('professionalTitle')?.value || '';
+    const email = document.getElementById('email')?.value || '';
+    const phone = document.getElementById('phone')?.value || '';
+    const location = document.getElementById('location')?.value || '';
+
+    text += `${fullName}\n${professionalTitle}\n`;
+    text += `${email} | ${phone} | ${location}\n\n`;
+
+    // Summary
+    const summary = document.getElementById('summary')?.value || '';
+    if (summary) {
+        text += `PROFESSIONAL SUMMARY\n${summary}\n\n`;
     }
 
-    console.log('Break points (canvas pixels):', uniqueBreakPoints.slice(0, 10).map(p => p.toFixed(0)));
+    // Experience
+    if (experienceItems.length > 0) {
+        text += 'EXPERIENCE\n';
+        experienceItems.forEach(item => {
+            if (item.job_title || item.company_name) {
+                text += `${item.job_title} | ${item.company_name}\n`;
+                text += `${item.start_date} - ${item.end_date}\n`;
+                if (item.description) {
+                    text += `${item.description}\n`;
+                }
+                text += '\n';
+            }
+        });
+    }
 
-    return uniqueBreakPoints;
+    // Education
+    if (educationItems.length > 0) {
+        text += 'EDUCATION\n';
+        educationItems.forEach(item => {
+            if (item.degree || item.institution) {
+                text += `${item.degree} | ${item.institution}\n`;
+                text += `${item.start_date} - ${item.end_date}\n\n`;
+            }
+        });
+    }
+
+    // Skills
+    const skills = document.getElementById('skills')?.value || '';
+    if (skills) {
+        text += `SKILLS\n${skills}\n\n`;
+    }
+
+    return text;
+}
+
+// Update score display
+function updateScoreDisplay(state, score, label) {
+    const scoreText = document.querySelector('.score-text');
+    const scoreStatus = document.querySelector('.score-status');
+    const scoreFill = document.querySelector('.score-fill');
+
+    if (scoreText) scoreText.textContent = score;
+    if (scoreStatus) scoreStatus.textContent = label;
+
+    if (scoreFill && score !== '--') {
+        const numScore = parseInt(score);
+        const circumference = 2 * Math.PI * 45;
+        const offset = circumference - (numScore / 100) * circumference;
+        scoreFill.style.strokeDashoffset = offset;
+
+        // Color based on score
+        if (numScore >= 80) {
+            scoreFill.style.stroke = '#10b981'; // Green
+        } else if (numScore >= 60) {
+            scoreFill.style.stroke = '#f59e0b'; // Orange
+        } else {
+            scoreFill.style.stroke = '#ef4444'; // Red
+        }
+    }
+}
+
+// Get score label
+function getScoreLabel(score) {
+    const numScore = parseInt(score);
+    if (numScore >= 80) return 'Excellent Match';
+    if (numScore >= 60) return 'Good Match';
+    if (numScore >= 40) return 'Fair Match';
+    return 'Needs Improvement';
+}
+
+// Display suggestions
+function displaySuggestions(improvements, keywordsFound, keywordsMissing) {
+    const suggestionsSection = document.querySelector('.suggestions-section');
+    if (!suggestionsSection) {
+        console.error('Suggestions section not found');
+        return;
+    }
+
+    let html = '<h3 class="form-section-title">Analysis Results</h3>';
+
+    // Keywords found
+    if (keywordsFound && keywordsFound.length > 0) {
+        html += '<div class="suggestion-box success-box">';
+        html += '<h4><i class="fa-solid fa-check-circle"></i> Keywords Found</h4>';
+        html += '<div class="keywords-list">';
+        keywordsFound.forEach(keyword => {
+            html += `<span class="keyword-badge found">${escapeHtml(keyword)}</span>`;
+        });
+        html += '</div></div>';
+    }
+
+    // Keywords missing
+    if (keywordsMissing && keywordsMissing.length > 0) {
+        html += '<div class="suggestion-box warning-box">';
+        html += '<h4><i class="fa-solid fa-exclamation-circle"></i> Missing Keywords</h4>';
+        html += '<div class="keywords-list">';
+        keywordsMissing.forEach(keyword => {
+            html += `<span class="keyword-badge missing">${escapeHtml(keyword)}</span>`;
+        });
+        html += '</div></div>';
+    }
+
+    // Improvements (from API)
+    if (improvements && improvements.length > 0) {
+        html += '<div class="suggestion-box info-box">';
+        html += '<h4><i class="fa-solid fa-lightbulb"></i> Recommendations</h4>';
+        html += '<ul class="suggestions-list">';
+        improvements.forEach(improvement => {
+            // Handle both string and object formats
+            if (typeof improvement === 'string') {
+                html += `<li>${escapeHtml(improvement)}</li>`;
+            } else if (improvement.suggestion) {
+                html += `<li><strong>${escapeHtml(improvement.category || 'General')}:</strong> ${escapeHtml(improvement.suggestion)}</li>`;
+            }
+        });
+        html += '</ul></div>';
+    }
+
+    // If no data to show
+    if ((!keywordsFound || keywordsFound.length === 0) &&
+        (!keywordsMissing || keywordsMissing.length === 0) &&
+        (!improvements || improvements.length === 0)) {
+        html += '<p class="empty-state">No specific recommendations at this time. Your resume looks good!</p>';
+    }
+
+    suggestionsSection.innerHTML = html;
+    console.log('Suggestions displayed');
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function setupJobDescriptionToggle() {
