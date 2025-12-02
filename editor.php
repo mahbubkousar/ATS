@@ -59,17 +59,17 @@ if (!$resumeData) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css?v=9">
-    <link rel="stylesheet" href="css/editor.css?v=9">
+    <link rel="stylesheet" href="css/editor.css?v=16">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="editor-body">
     <nav class="floating-nav">
         <div class="nav-content">
-            <a href="index.html" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
+            <a href="index.php" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
             <div class="nav-links">
                 <a href="dashboard.php" class="nav-link">Dashboard</a>
                 <a href="score-checker.php" class="nav-link">ATS Checker</a>
-                <a href="about.html" class="nav-link">About</a>
+                <a href="ats-converter.php" class="nav-link">ATS Converter</a>
                 <button class="nav-cta" id="saveResumeBtn">Save Resume</button>
                 <button class="nav-cta download-btn" id="downloadBtn">Download PDF</button>
             </div>

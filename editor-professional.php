@@ -58,19 +58,19 @@ if (!$resumeData) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css?v=4">
-    <link rel="stylesheet" href="css/editor.css?v=9">
+    <link rel="stylesheet" href="css/editor.css?v=13">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="editor-body">
     <nav class="floating-nav">
         <div class="nav-content">
-            <a href="index.html" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
+            <a href="index.php" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
             <div class="nav-links">
                 <a href="dashboard.php" class="nav-link">Dashboard</a>
                 <a href="score-checker.php" class="nav-link">ATS Checker</a>
-                <a href="about.html" class="nav-link">About</a>
+                <a href="ats-converter.php" class="nav-link">ATS Converter</a>
                 <button class="nav-cta" id="saveResumeBtn">Save Resume</button>
-                <button class="nav-cta download-btn" id="downloadBtn">Download PDF</button>
+                <button class="nav-cta download-btn" id="downloadBtn">Print / Download PDF</button>
             </div>
         </div>
     </nav>
@@ -147,14 +147,17 @@ if (!$resumeData) {
 
             <!-- Certifications & Licenses (Optional) -->
             <div class="form-section">
-                <h3 class="form-section-title"><i class="fa-solid fa-certificate"></i> Certifications & Licenses (Optional)</h3>
-                <textarea class="form-textarea" id="certifications" placeholder="Enter professional certifications and licenses&#10;&#10;• CFA Level II Candidate&#10;• Certified Public Accountant (CPA)&#10;• Project Management Professional (PMP)" rows="4"></textarea>
+                <h3 class="form-section-title"><i class="fa-solid fa-certificate"></i> Certifications & Licenses</h3>
+                <div id="certificationsContainer"></div>
+                <button class="add-item-btn" id="addCertificationBtn">
+                    <i class="fa-solid fa-plus"></i> Add Certification
+                </button>
             </div>
 
             <!-- Professional Affiliations (Optional) -->
             <div class="form-section">
-                <h3 class="form-section-title"><i class="fa-solid fa-users"></i> Professional Affiliations (Optional)</h3>
-                <textarea class="form-textarea" id="affiliations" placeholder="Enter professional memberships and affiliations&#10;&#10;• Member, American Finance Association&#10;• Member, CFA Institute" rows="3"></textarea>
+                <h3 class="form-section-title"><i class="fa-solid fa-users"></i> Professional Affiliations</h3>
+                <textarea class="form-textarea" id="affiliations" placeholder="Enter professional memberships and affiliations (one per line)&#10;&#10;Member, American Finance Association&#10;Member, CFA Institute" rows="4"></textarea>
             </div>
         </aside>
 
@@ -237,6 +240,60 @@ if (!$resumeData) {
         </div>
     </footer>
 
+    <!-- MODALS -->
+    <!-- Notification Modal -->
+    <div class="modal-overlay" id="notificationModal" style="display: none;">
+        <div class="notification-modal" id="notificationModalContent">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 id="notificationTitle">Success</h3>
+            <p id="notificationMessage">Operation completed successfully</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" id="notificationOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Progress Modal -->
+    <div class="modal-overlay" id="analysisProgressModal" style="display: none;">
+        <div class="progress-modal">
+            <div class="progress-icon">
+                <i class="fas fa-wand-magic-sparkles fa-spin"></i>
+            </div>
+            <h3 class="progress-title">Analyzing Your Resume</h3>
+            <p class="progress-stage" id="progressStage">Initializing analysis...</p>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+            <div class="progress-percentage" id="progressPercentage">0%</div>
+
+            <div class="progress-steps">
+                <div class="progress-step" id="step1">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Extracting Text</span>
+                </div>
+                <div class="progress-step" id="step2">
+                    <i class="fas fa-align-left"></i>
+                    <span>Analyzing Format</span>
+                </div>
+                <div class="progress-step" id="step3">
+                    <i class="fas fa-key"></i>
+                    <span>Checking Keywords</span>
+                </div>
+                <div class="progress-step" id="step4">
+                    <i class="fas fa-list-check"></i>
+                    <span>Evaluating Structure</span>
+                </div>
+                <div class="progress-step" id="step5">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Generating Insights</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Pass resume data to JavaScript
         const resumeData = <?php echo json_encode([
@@ -248,12 +305,14 @@ if (!$resumeData) {
             'status' => $resumeData['status'] ?? 'draft',
             'experience' => $resumeData['experience'] ?? null,
             'education' => $resumeData['education'] ?? null,
-            'skills' => $resumeData['skills'] ?? null
+            'skills' => $resumeData['skills'] ?? null,
+            'certifications' => $resumeData['certifications'] ?? null,
+            'affiliations' => $resumeData['affiliations'] ?? null
         ]); ?>;
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/navigation-fix.js"></script>
+    <script src="js/modal-utils.js?v=3"></script>
     <script src="js/app.js?v=5"></script>
-    <script src="js/editor-professional.js?v=2"></script>
+    <script src="js/editor-professional.js?v=10"></script>
 </body>
 </html>

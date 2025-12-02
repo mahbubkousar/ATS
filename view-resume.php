@@ -355,51 +355,38 @@ $updateStmt->bind_param("i", $resumeId);
 $updateStmt->execute();
 $updateStmt->close();
 
-// Get user data for resume
-$userId = $resumeData['user_id'];
-
-// Load experience
-$experienceStmt = $conn->prepare("SELECT * FROM user_experience WHERE user_id = ? ORDER BY display_order");
-$experienceStmt->bind_param("i", $userId);
-$experienceStmt->execute();
-$experienceResult = $experienceStmt->get_result();
-$experience = [];
-while ($row = $experienceResult->fetch_assoc()) {
-    $experience[] = $row;
-}
-$experienceStmt->close();
-
-// Load education
-$educationStmt = $conn->prepare("SELECT * FROM user_education WHERE user_id = ? ORDER BY display_order");
-$educationStmt->bind_param("i", $userId);
-$educationStmt->execute();
-$educationResult = $educationStmt->get_result();
-$education = [];
-while ($row = $educationResult->fetch_assoc()) {
-    $education[] = $row;
-}
-$educationStmt->close();
-
-// Load skills
-$skillsStmt = $conn->prepare("SELECT skill_name FROM user_skills WHERE user_id = ? ORDER BY display_order");
-$skillsStmt->bind_param("i", $userId);
-$skillsStmt->execute();
-$skillsResult = $skillsStmt->get_result();
-$skills = [];
-while ($row = $skillsResult->fetch_assoc()) {
-    $skills[] = $row['skill_name'];
-}
-$skillsStmt->close();
-
+// Get resume-specific data (NOT user-level data)
 $personalDetails = json_decode($resumeData['personal_details'], true) ?? [];
 $summaryText = $resumeData['summary_text'] ?? '';
 $templateName = $resumeData['template_name'] ?? 'classic';
 
+// Decode resume-specific experience, education, skills from JSON
+$experience = json_decode($resumeData['experience'], true) ?? [];
+$education = json_decode($resumeData['education'], true) ?? [];
+
+// Handle skills - can be JSON array or comma-separated string
+$skillsData = $resumeData['skills'] ?? '';
+if (is_string($skillsData) && !empty($skillsData)) {
+    // Try to decode as JSON first
+    $decodedSkills = json_decode($skillsData, true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($decodedSkills)) {
+        $skills = $decodedSkills;
+    } else {
+        // If not JSON, treat as comma-separated string
+        $skills = array_map('trim', explode(',', $skillsData));
+    }
+} else {
+    $skills = [];
+}
+
+// Load template
 // Load template
 $templatePath = __DIR__ . '/templates/' . $templateName . '.html';
 if (!file_exists($templatePath)) {
     $templatePath = __DIR__ . '/templates/classic.html';
 }
+
+// Read the template HTML
 $templateHTML = file_get_contents($templatePath);
 ?>
 <!DOCTYPE html>
@@ -413,7 +400,6 @@ $templateHTML = file_get_contents($templatePath);
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
             background: #f3f4f6;
         }
         .public-header {
@@ -423,11 +409,35 @@ $templateHTML = file_get_contents($templatePath);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .public-header h1 {
+        .public-header-title {
             margin: 0;
             font-size: 1.25rem;
             color: #7c3aed;
+            font-weight: 600;
+        }
+        .create-resume-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        .create-resume-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
         .download-btn {
             background: #7c3aed;
@@ -440,6 +450,8 @@ $templateHTML = file_get_contents($templatePath);
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.95rem;
+            transition: background 0.2s;
         }
         .download-btn:hover {
             background: #6d28d9;
@@ -453,8 +465,14 @@ $templateHTML = file_get_contents($templatePath);
             overflow: hidden;
         }
         @media print {
-            body { background: white; }
-            .public-header { display: none; }
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+            .public-header {
+                display: none !important;
+            }
             .resume-wrapper {
                 max-width: none;
                 margin: 0;
@@ -466,19 +484,27 @@ $templateHTML = file_get_contents($templatePath);
 </head>
 <body>
     <div class="public-header">
-        <h1><i class="fas fa-file-alt"></i> Public Resume</h1>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <h1 class="public-header-title">
+                <i class="fas fa-user"></i> <?php echo htmlspecialchars($personalDetails['fullName'] ?? 'Resume'); ?>
+            </h1>
+            <a href="/ATS/register.php" class="create-resume-btn">
+                <i class="fas fa-plus-circle"></i> Create Your Own
+            </a>
+        </div>
         <button class="download-btn" onclick="handleDownload()">
             <i class="fas fa-download"></i> Download PDF
         </button>
     </div>
 
-    <div class="resume-wrapper" id="resumeContent">
-        <?php echo $templateHTML; ?>
+    <div class="resume-wrapper">
+        <iframe id="resumeFrame" style="width: 100%; border: none; min-height: 1100px;"></iframe>
     </div>
 
     <script>
         const resumeToken = '<?php echo $token; ?>';
         const resumeId = <?php echo $resumeId; ?>;
+        const templateName = '<?php echo $templateName; ?>';
 
         // Track download
         function handleDownload() {
@@ -499,89 +525,218 @@ $templateHTML = file_get_contents($templatePath);
             });
         }
 
-        // Populate template with data
+        // Load template and populate with data
         document.addEventListener('DOMContentLoaded', () => {
+            const iframe = document.getElementById('resumeFrame');
+
+            // Load template into iframe
+            iframe.src = '/ATS/templates/' + templateName + '.html';
+
+            iframe.onload = () => {
+                // Wait a bit for template to fully load
+                setTimeout(() => {
+                    populateResumeData();
+                }, 100);
+            };
+        });
+
+        function populateResumeData() {
+            const iframe = document.getElementById('resumeFrame');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
             const personalDetails = <?php echo json_encode($personalDetails); ?>;
             const summary = <?php echo json_encode($summaryText); ?>;
             const experience = <?php echo json_encode($experience); ?>;
             const education = <?php echo json_encode($education); ?>;
             const skills = <?php echo json_encode($skills); ?>;
 
-            // Populate personal fields
+            console.log('Populating resume with data:', { personalDetails, summary, experience, education, skills });
+
+            // Field mapping for personal details
+            const fieldMapping = {
+                fullName: 'name',
+                professionalTitle: 'title'
+            };
+
+            // Populate personal details
             Object.keys(personalDetails).forEach(key => {
-                const elements = document.querySelectorAll(`[data-field="${key}"]`);
+                const value = personalDetails[key];
+                if (!value) return;
+
+                const dataField = fieldMapping[key] || key;
+                const elements = iframeDoc.querySelectorAll(`[data-field="${dataField}"]`);
                 elements.forEach(el => {
-                    el.textContent = personalDetails[key] || '';
+                    el.textContent = value;
                 });
             });
 
             // Populate summary
-            const summaryEl = document.querySelector('[data-field="summary"]');
-            if (summaryEl) summaryEl.textContent = summary;
+            const summaryEl = iframeDoc.querySelector('[data-field="summary"]');
+            const summarySection = iframeDoc.querySelector('[data-section="summary"]');
+            if (summaryEl && summary) {
+                summaryEl.textContent = summary;
+                if (summarySection) summarySection.style.display = 'block';
+            }
 
             // Populate experience
-            const expContainer = document.querySelector('[data-field="experience"]');
-            if (expContainer && experience.length > 0) {
-                expContainer.innerHTML = '';
-                experience.forEach(exp => {
-                    const entryDiv = document.createElement('div');
-                    entryDiv.className = 'entry';
-
-                    let html = '<div class="entry-header">';
-                    html += '<div class="entry-title-line">';
-                    html += `<div class="entry-title">${exp.job_title || ''}</div>`;
-                    html += `<div class="entry-date">${exp.start_date || ''} - ${exp.end_date || ''}</div>`;
-                    html += '</div>';
-                    html += `<div class="entry-company">${exp.company_name || ''}${exp.location ? ', ' + exp.location : ''}</div>`;
-                    html += '</div>';
-
-                    if (exp.description) {
-                        html += '<div class="entry-description"><ul>';
-                        const bullets = exp.description.split('\n').filter(line => line.trim());
-                        bullets.forEach(bullet => {
-                            html += `<li>${bullet}</li>`;
-                        });
-                        html += '</ul></div>';
-                    }
-
-                    entryDiv.innerHTML = html;
-                    expContainer.appendChild(entryDiv);
-                });
-            }
+            updateExperienceList(iframeDoc, experience);
 
             // Populate education
-            const eduContainer = document.querySelector('[data-field="education"]');
-            if (eduContainer && education.length > 0) {
-                eduContainer.innerHTML = '';
-                education.forEach(edu => {
-                    const entryDiv = document.createElement('div');
-                    entryDiv.className = 'entry';
-
-                    let html = '<div class="entry-header">';
-                    html += '<div class="entry-title-line">';
-                    html += `<div class="entry-title">${edu.degree || ''}</div>`;
-                    html += `<div class="entry-date">${edu.start_date || ''} - ${edu.end_date || ''}</div>`;
-                    html += '</div>';
-                    html += `<div class="entry-company">${edu.institution || ''}${edu.location ? ', ' + edu.location : ''}</div>`;
-                    html += '</div>';
-
-                    entryDiv.innerHTML = html;
-                    eduContainer.appendChild(entryDiv);
-                });
-            }
+            updateEducationList(iframeDoc, education);
 
             // Populate skills
-            const skillsContainer = document.querySelector('[data-field="skills"]');
-            if (skillsContainer && skills.length > 0) {
-                skillsContainer.innerHTML = '';
-                skills.forEach(skill => {
-                    const skillSpan = document.createElement('span');
-                    skillSpan.className = 'skill-item';
-                    skillSpan.textContent = skill;
-                    skillsContainer.appendChild(skillSpan);
-                });
+            updateSkillsList(iframeDoc, skills);
+
+            // Auto-resize iframe
+            resizeIframe();
+        }
+
+        function updateExperienceList(iframeDoc, experience) {
+            const container = iframeDoc.querySelector('[data-field="experience-list"]');
+            if (!container) return;
+
+            if (!experience || experience.length === 0) return;
+
+            container.innerHTML = '';
+            experience.forEach(item => {
+                const entry = iframeDoc.createElement('div');
+                entry.className = 'entry';
+
+                // Handle different data formats
+                const position = item.position || item.jobTitle || item.job_title || '';
+                const company = item.company || item.company_name || '';
+                const location = item.location || '';
+
+                // Handle dates - support multiple formats
+                let dateStr = '';
+                if (item.dates) {
+                    dateStr = item.dates;
+                } else if (item.startDate && item.endDate) {
+                    dateStr = `${item.startDate} - ${item.endDate}`;
+                } else if (item.start_date && item.end_date) {
+                    dateStr = `${item.start_date} - ${item.end_date}`;
+                }
+
+                const header = `
+                    <div class="entry-header">
+                        <div class="entry-title-line">
+                            <div class="entry-title">${position}</div>
+                            <div class="entry-date">${dateStr}</div>
+                        </div>
+                        <div class="entry-company">${company}${location ? ', ' + location : ''}</div>
+                    </div>
+                `;
+
+                let description = '';
+                if (item.description) {
+                    const points = item.description.split('\n').filter(p => p.trim());
+                    if (points.length > 0) {
+                        description = '<div class="entry-description"><ul>';
+                        points.forEach(point => {
+                            description += `<li>${point.trim()}</li>`;
+                        });
+                        description += '</ul></div>';
+                    }
+                }
+
+                entry.innerHTML = header + description;
+                container.appendChild(entry);
+            });
+        }
+
+        function updateEducationList(iframeDoc, education) {
+            const container = iframeDoc.querySelector('[data-field="education-list"]');
+            if (!container) return;
+
+            if (!education || education.length === 0) return;
+
+            container.innerHTML = '';
+            education.forEach(item => {
+                const entry = iframeDoc.createElement('div');
+                entry.className = 'entry';
+
+                const degree = item.degree || '';
+                const institution = item.institution || '';
+                const location = item.location || '';
+
+                // Handle dates
+                let dateStr = '';
+                if (item.year) {
+                    dateStr = item.year;
+                } else if (item.startDate && item.endDate) {
+                    dateStr = `${item.startDate} - ${item.endDate}`;
+                } else if (item.start_date && item.end_date) {
+                    dateStr = `${item.start_date} - ${item.end_date}`;
+                }
+
+                entry.innerHTML = `
+                    <div class="entry-header">
+                        <div class="entry-title-line">
+                            <div class="entry-title">${degree}</div>
+                            <div class="entry-date">${dateStr}</div>
+                        </div>
+                        <div class="entry-company">${institution}${location ? ', ' + location : ''}</div>
+                    </div>
+                `;
+
+                container.appendChild(entry);
+            });
+        }
+
+        function updateSkillsList(iframeDoc, skills) {
+            const skillsContainer = iframeDoc.querySelector('[data-field="skills"]');
+            if (!skillsContainer) return;
+
+            skillsContainer.innerHTML = '';
+
+            // Handle array of skill categories (from modern editor)
+            if (Array.isArray(skills) && skills.length > 0) {
+                const firstItem = skills[0];
+
+                // Check if it's skill categories with {category, items} structure
+                if (firstItem && typeof firstItem === 'object' && firstItem.category) {
+                    skills.forEach(skillCategory => {
+                        if (skillCategory.category && skillCategory.items && skillCategory.items.length > 0) {
+                            const skillCard = iframeDoc.createElement('div');
+                            skillCard.className = 'skill-category';
+                            skillCard.innerHTML = `
+                                <div class="skill-category-title">${skillCategory.category}</div>
+                                <div class="skill-items">${skillCategory.items.join(', ')}</div>
+                            `;
+                            skillsContainer.appendChild(skillCard);
+                        }
+                    });
+                } else {
+                    // Plain array of skill strings
+                    skills.forEach(skill => {
+                        const skillSpan = iframeDoc.createElement('span');
+                        skillSpan.className = 'skill-item';
+                        skillSpan.textContent = typeof skill === 'string' ? skill : skill.toString();
+                        skillsContainer.appendChild(skillSpan);
+                    });
+                }
+            } else if (typeof skills === 'string' && skills.trim()) {
+                // Comma-separated string
+                skillsContainer.textContent = skills;
             }
-        });
+        }
+
+        function resizeIframe() {
+            const iframe = document.getElementById('resumeFrame');
+            if (iframe && iframe.contentWindow) {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const height = iframeDoc.body.scrollHeight;
+                iframe.style.height = (height + 50) + 'px';
+            }
+        }
+
+        // Handle print
+        window.onbeforeprint = function() {
+            const iframe = document.getElementById('resumeFrame');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.print();
+            }
+        };
     </script>
 </body>
 </html>

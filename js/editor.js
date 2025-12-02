@@ -13,10 +13,6 @@ let referenceItems = [];
 
 // Template configuration mapping
 const TEMPLATE_CONFIG = {
-    'classic': {
-        type: 'professional',
-        fields: []
-    },
     'modern': {
         type: 'professional',
         fields: []
@@ -25,29 +21,9 @@ const TEMPLATE_CONFIG = {
         type: 'professional',
         fields: []
     },
-    'technical': {
-        type: 'professional',
-        fields: ['projects']
-    },
-    'executive': {
-        type: 'professional',
-        fields: ['achievements', 'board']
-    },
-    'creative': {
-        type: 'professional',
-        fields: ['portfolio']
-    },
     'academic-standard': {
         type: 'academic',
         fields: ['researchInterests', 'publications', 'grants', 'teaching', 'references']
-    },
-    'research-scientist': {
-        type: 'academic',
-        fields: ['researchInterests', 'publications', 'grants', 'references']
-    },
-    'teaching-faculty': {
-        type: 'academic',
-        fields: ['researchInterests', 'publications', 'teaching', 'references']
     }
 };
 

@@ -9,7 +9,12 @@ let resumeState = {
     summary_text: resumeData.summary_text || '',
     experience: [],
     education: [],
-    skills: []
+    skills: '',
+    researchInterests: '',
+    publications: [],
+    grants: [],
+    teaching: [],
+    memberships: ''
 };
 
 let previewIframe = null;
@@ -55,7 +60,7 @@ function loadTemplatePreview() {
 
 function setupEventListeners() {
     // Personal details
-    const personalFields = ['fullName', 'professionalTitle', 'email', 'phone', 'location', 'linkedin'];
+    const personalFields = ['fullName', 'professionalTitle', 'department', 'email', 'phone', 'location', 'orcid', 'googleScholar'];
     personalFields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) {
@@ -75,18 +80,39 @@ function setupEventListeners() {
         }, 300));
     }
 
-    // Skills
-    const skillsElement = document.getElementById('skills');
-    if (skillsElement) {
-        skillsElement.addEventListener('input', debounce(() => {
-            resumeState.skills = skillsElement.value.split(',').map(s => s.trim()).filter(s => s);
+    // Research Interests
+    const researchInterestsElement = document.getElementById('researchInterests');
+    if (researchInterestsElement) {
+        researchInterestsElement.addEventListener('input', debounce(() => {
+            resumeState.researchInterests = researchInterestsElement.value;
             updatePreview();
         }, 300));
     }
 
-    // Experience and Education buttons
+    // Skills
+    const skillsElement = document.getElementById('skills');
+    if (skillsElement) {
+        skillsElement.addEventListener('input', debounce(() => {
+            resumeState.skills = skillsElement.value;
+            updatePreview();
+        }, 300));
+    }
+
+    // Memberships
+    const membershipsElement = document.getElementById('memberships');
+    if (membershipsElement) {
+        membershipsElement.addEventListener('input', debounce(() => {
+            resumeState.memberships = membershipsElement.value;
+            updatePreview();
+        }, 300));
+    }
+
+    // Add item buttons
     document.getElementById('addExperienceBtn').addEventListener('click', addExperience);
     document.getElementById('addEducationBtn').addEventListener('click', addEducation);
+    document.getElementById('addPublicationBtn').addEventListener('click', addPublication);
+    document.getElementById('addGrantBtn').addEventListener('click', addGrant);
+    document.getElementById('addTeachingBtn').addEventListener('click', addTeaching);
 }
 
 function updatePreview() {
@@ -97,12 +123,15 @@ function updatePreview() {
 
     // Update personal details
     const fieldMapping = {
-        fullName: 'name',
-        professionalTitle: 'title'
+        fullName: 'name'
     };
 
     Object.keys(resumeState.personal_details).forEach(key => {
         const value = resumeState.personal_details[key];
+
+        // Skip ORCID and Google Scholar - they have special handling
+        if (key === 'orcid' || key === 'googleScholar') return;
+
         const dataField = fieldMapping[key] || key;
         const element = iframeDoc.querySelector(`[data-field="${dataField}"]`);
         if (element && value) {
@@ -110,89 +139,272 @@ function updatePreview() {
         }
     });
 
-    // Update summary
-    const summaryElement = iframeDoc.querySelector('[data-field="summary"]');
-    if (summaryElement && resumeState.summary_text) {
-        summaryElement.textContent = resumeState.summary_text;
+    // Handle ORCID and Google Scholar display with conditional visibility
+    const orcidValue = resumeState.personal_details.orcid || '';
+    const scholarValue = resumeState.personal_details.googleScholar || '';
+
+    const orcidDisplay = iframeDoc.querySelector('[data-field="orcid-display"]');
+    const orcidSpan = iframeDoc.querySelector('[data-field="orcid"]');
+    const scholarDisplay = iframeDoc.querySelector('[data-field="googleScholar-display"]');
+    const scholarText = iframeDoc.querySelector('[data-field="googleScholar-text"]');
+    const separator = iframeDoc.querySelector('[data-field="scholar-separator"]');
+    const profilesDiv = iframeDoc.querySelector('.academic-profiles');
+
+    if (orcidValue || scholarValue) {
+        if (profilesDiv) profilesDiv.style.display = 'block';
+
+        if (orcidValue) {
+            if (orcidDisplay) orcidDisplay.style.display = 'inline';
+            if (orcidSpan) orcidSpan.textContent = orcidValue;
+        } else {
+            if (orcidDisplay) orcidDisplay.style.display = 'none';
+        }
+
+        if (scholarValue) {
+            if (scholarDisplay) scholarDisplay.style.display = 'inline';
+            if (scholarText) scholarText.textContent = scholarValue;
+        } else {
+            if (scholarDisplay) scholarDisplay.style.display = 'none';
+        }
+
+        // Show separator only if both are present
+        if (separator) {
+            separator.style.display = (orcidValue && scholarValue) ? 'inline' : 'none';
+        }
+    } else {
+        if (profilesDiv) profilesDiv.style.display = 'none';
     }
 
-    // Update experience list
-    updateExperienceList(iframeDoc);
+    // Update summary
+    updateSummary(iframeDoc);
 
     // Update education list
     updateEducationList(iframeDoc);
 
+    // Update experience list
+    updateExperienceList(iframeDoc);
+
+    // Update research interests
+    updateResearchInterests(iframeDoc);
+
+    // Update publications
+    updatePublications(iframeDoc);
+
+    // Update grants
+    updateGrants(iframeDoc);
+
+    // Update teaching
+    updateTeaching(iframeDoc);
+
     // Update skills
-    updateSkillsList(iframeDoc);
+    updateSkills(iframeDoc);
+
+    // Update memberships
+    updateMemberships(iframeDoc);
 }
 
 function updateExperienceList(iframeDoc) {
     const container = iframeDoc.querySelector('[data-field="experience-list"]');
-    if (!container) return;
+    const section = iframeDoc.querySelector('[data-section="experience"]');
+    if (!container || !section) return;
 
+    // Always show experience section (it's a core section)
+    section.style.display = 'block';
     container.innerHTML = '';
-    resumeState.experience.forEach(item => {
-        const entry = iframeDoc.createElement('div');
-        entry.className = 'entry';
 
-        const header = `
-            <div class="entry-header">
-                <div class="entry-title-line">
-                    <div class="entry-title">${item.position || ''}</div>
-                    <div class="entry-date">${item.startDate || ''} - ${item.endDate || ''}</div>
+    if (resumeState.experience && resumeState.experience.length > 0) {
+        resumeState.experience.forEach(item => {
+            const entry = iframeDoc.createElement('div');
+            entry.className = 'experience-entry';
+
+            const header = `
+                <div class="position-title">${item.position || ''}</div>
+                <div class="employer-date">
+                    <span class="employer">${item.company || ''}${item.location ? ', ' + item.location : ''}</span>
+                    <span style="float: right;">${item.startDate || ''} - ${item.endDate || ''}</span>
                 </div>
-                <div class="entry-company">${item.company || ''}, ${item.location || ''}</div>
-            </div>
-        `;
+            `;
 
-        let description = '';
-        if (item.description) {
-            const points = item.description.split('\n').filter(p => p.trim());
-            if (points.length > 0) {
-                description = '<div class="entry-description"><ul>';
-                points.forEach(point => {
-                    description += `<li>${point.trim()}</li>`;
-                });
-                description += '</ul></div>';
+            let description = '';
+            if (item.description) {
+                const points = item.description.split('\n').filter(p => p.trim());
+                if (points.length > 0) {
+                    description = '<div class="description"><ul>';
+                    points.forEach(point => {
+                        const cleanPoint = point.trim().replace(/^[•\-\*]\s*/, '');
+                        description += `<li>${cleanPoint}</li>`;
+                    });
+                    description += '</ul></div>';
+                }
             }
-        }
 
-        entry.innerHTML = header + description;
-        container.appendChild(entry);
-    });
+            entry.innerHTML = header + description;
+            container.appendChild(entry);
+        });
+    }
+}
+
+function updateSummary(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="summary"]');
+    const section = iframeDoc.querySelector('[data-section="summary"]');
+    if (!container || !section) return;
+
+    if (resumeState.summary_text && resumeState.summary_text.trim()) {
+        section.style.display = 'block';
+        container.textContent = resumeState.summary_text;
+    } else {
+        section.style.display = 'none';
+    }
 }
 
 function updateEducationList(iframeDoc) {
     const container = iframeDoc.querySelector('[data-field="education-list"]');
-    if (!container) return;
+    const section = iframeDoc.querySelector('[data-section="education"]');
+    if (!container || !section) return;
 
+    // Always show education section (it's a core section)
+    section.style.display = 'block';
     container.innerHTML = '';
-    resumeState.education.forEach(item => {
-        const entry = iframeDoc.createElement('div');
-        entry.className = 'entry';
 
-        entry.innerHTML = `
-            <div class="entry-header">
-                <div class="entry-title-line">
-                    <div class="entry-title">${item.degree || ''}</div>
-                    <div class="entry-date">${item.startDate || ''} - ${item.endDate || ''}</div>
-                </div>
-                <div class="entry-company">${item.institution || ''}, ${item.location || ''}</div>
-            </div>
-        `;
+    if (resumeState.education && resumeState.education.length > 0) {
+        resumeState.education.forEach(item => {
+            const entry = iframeDoc.createElement('div');
+            entry.className = 'education-entry';
 
-        container.appendChild(entry);
-    });
-}
+            entry.innerHTML = `
+                <div class="degree-line">${item.degree || ''}</div>
+                <div class="institution">${item.institution || ''}</div>
+                <div class="date-gpa">${item.startDate || ''} - ${item.endDate || ''}</div>
+            `;
 
-function updateSkillsList(iframeDoc) {
-    const skillsElement = iframeDoc.querySelector('[data-field="skills"]');
-    if (!skillsElement) return;
-
-    if (resumeState.skills && resumeState.skills.length > 0) {
-        skillsElement.textContent = resumeState.skills.join(' • ');
+            container.appendChild(entry);
+        });
     }
 }
+
+function updateResearchInterests(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="research-interests"]');
+    const section = iframeDoc.querySelector('[data-section="research-interests"]');
+    if (!container || !section) return;
+
+    if (resumeState.researchInterests && resumeState.researchInterests.trim()) {
+        section.style.display = 'block';
+        container.textContent = resumeState.researchInterests;
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function updatePublications(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="publications-list"]');
+    const section = iframeDoc.querySelector('[data-section="publications"]');
+    if (!container || !section) return;
+
+    if (resumeState.publications && resumeState.publications.length > 0) {
+        section.style.display = 'block';
+        container.innerHTML = '';
+
+        resumeState.publications.forEach(item => {
+            const pub = iframeDoc.createElement('div');
+            pub.className = 'publication';
+            pub.innerHTML = `
+                ${item.authors || ''} <span class="publication-year">(${item.year || ''}).</span>
+                <span class="publication-title">${item.title || ''}</span>
+                <em>${item.journal || ''}</em>
+            `;
+            container.appendChild(pub);
+        });
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function updateGrants(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="grants-list"]');
+    const section = iframeDoc.querySelector('[data-section="grants"]');
+    if (!container || !section) return;
+
+    if (resumeState.grants && resumeState.grants.length > 0) {
+        section.style.display = 'block';
+        container.innerHTML = '';
+
+        resumeState.grants.forEach(item => {
+            const grant = iframeDoc.createElement('div');
+            grant.className = 'grant-entry';
+            grant.innerHTML = `
+                <div class="grant-title">${item.title || ''}</div>
+                <div class="grant-details">
+                    ${item.role || ''} (${item.year || ''})<br>
+                    ${item.amount ? 'Amount: ' + item.amount : ''}
+                </div>
+            `;
+            container.appendChild(grant);
+        });
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function updateTeaching(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="teaching-list"]');
+    const section = iframeDoc.querySelector('[data-section="teaching"]');
+    if (!container || !section) return;
+
+    if (resumeState.teaching && resumeState.teaching.length > 0) {
+        section.style.display = 'block';
+        container.innerHTML = '';
+
+        resumeState.teaching.forEach(item => {
+            const course = iframeDoc.createElement('div');
+            course.className = 'course';
+            course.innerHTML = `
+                <span class="course-title">${item.course || ''}</span> - ${item.term || ''}
+            `;
+            container.appendChild(course);
+        });
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function updateSkills(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="skills"]');
+    const section = iframeDoc.querySelector('[data-section="skills"]');
+    if (!container || !section) return;
+
+    if (resumeState.skills && resumeState.skills.trim()) {
+        section.style.display = 'block';
+        container.textContent = resumeState.skills;
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function updateMemberships(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="memberships"]');
+    const section = iframeDoc.querySelector('[data-section="memberships"]');
+    if (!container || !section) return;
+
+    if (resumeState.memberships && resumeState.memberships.trim()) {
+        section.style.display = 'block';
+        const lines = resumeState.memberships.split('\n').map(l => l.trim()).filter(l => l);
+
+        if (lines.length > 0) {
+            container.innerHTML = '';
+            lines.forEach(line => {
+                const div = iframeDoc.createElement('div');
+                div.className = 'membership';
+                const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+                div.textContent = cleanLine;
+                container.appendChild(div);
+            });
+        }
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+// ===== ADD/REMOVE FUNCTIONS =====
 
 function addExperience() {
     const container = document.getElementById('experienceContainer');
@@ -250,8 +462,17 @@ function removeExperience(index) {
 function rebuildExperienceUI() {
     const container = document.getElementById('experienceContainer');
     container.innerHTML = '';
-    resumeState.experience.forEach((_, index) => {
+    const expCopy = [...resumeState.experience];
+    resumeState.experience = [];
+    expCopy.forEach((item) => {
+        const idx = resumeState.experience.length;
+        resumeState.experience.push(item);
         addExperience();
+        // Set values
+        Object.keys(item).forEach(key => {
+            const field = container.querySelector(`[data-exp-field="${key}"][data-exp-index="${idx}"]`);
+            if (field) field.value = item[key];
+        });
     });
 }
 
@@ -309,8 +530,205 @@ function removeEducation(index) {
 function rebuildEducationUI() {
     const container = document.getElementById('educationContainer');
     container.innerHTML = '';
-    resumeState.education.forEach((_, index) => {
+    const eduCopy = [...resumeState.education];
+    resumeState.education = [];
+    eduCopy.forEach((item) => {
+        const idx = resumeState.education.length;
+        resumeState.education.push(item);
         addEducation();
+        // Set values
+        Object.keys(item).forEach(key => {
+            const field = container.querySelector(`[data-edu-field="${key}"][data-edu-index="${idx}"]`);
+            if (field) field.value = item[key];
+        });
+    });
+}
+
+function addPublication() {
+    const container = document.getElementById('publicationsContainer');
+    const index = resumeState.publications.length;
+
+    const publicationItem = {
+        authors: '',
+        year: '',
+        title: '',
+        journal: ''
+    };
+
+    resumeState.publications.push(publicationItem);
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'form-item';
+    itemDiv.innerHTML = `
+        <div class="form-item-header">
+            <span>Publication ${index + 1}</span>
+            <button type="button" class="remove-item-btn" onclick="removePublication(${index})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+        <input type="text" class="form-input" placeholder="Authors (e.g., Smith, J., & Jones, M.)" data-pub-field="authors" data-pub-index="${index}">
+        <input type="text" class="form-input" placeholder="Year" data-pub-field="year" data-pub-index="${index}">
+        <input type="text" class="form-input" placeholder="Title" data-pub-field="title" data-pub-index="${index}">
+        <input type="text" class="form-input" placeholder="Journal/Conference" data-pub-field="journal" data-pub-index="${index}">
+    `;
+
+    container.appendChild(itemDiv);
+
+    // Add event listeners to new fields
+    itemDiv.querySelectorAll('[data-pub-field]').forEach(field => {
+        field.addEventListener('input', debounce((e) => {
+            const idx = parseInt(e.target.dataset.pubIndex);
+            const fieldName = e.target.dataset.pubField;
+            resumeState.publications[idx][fieldName] = e.target.value;
+            updatePreview();
+        }, 300));
+    });
+}
+
+function removePublication(index) {
+    resumeState.publications.splice(index, 1);
+    rebuildPublicationsUI();
+    updatePreview();
+}
+
+function rebuildPublicationsUI() {
+    const container = document.getElementById('publicationsContainer');
+    container.innerHTML = '';
+    const pubCopy = [...resumeState.publications];
+    resumeState.publications = [];
+    pubCopy.forEach((item) => {
+        const idx = resumeState.publications.length;
+        resumeState.publications.push(item);
+        addPublication();
+        // Set values
+        Object.keys(item).forEach(key => {
+            const field = container.querySelector(`[data-pub-field="${key}"][data-pub-index="${idx}"]`);
+            if (field) field.value = item[key];
+        });
+    });
+}
+
+function addGrant() {
+    const container = document.getElementById('grantsContainer');
+    const index = resumeState.grants.length;
+
+    const grantItem = {
+        title: '',
+        role: '',
+        year: '',
+        amount: ''
+    };
+
+    resumeState.grants.push(grantItem);
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'form-item';
+    itemDiv.innerHTML = `
+        <div class="form-item-header">
+            <span>Grant ${index + 1}</span>
+            <button type="button" class="remove-item-btn" onclick="removeGrant(${index})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+        <input type="text" class="form-input" placeholder="Grant Title" data-grant-field="title" data-grant-index="${index}">
+        <input type="text" class="form-input" placeholder="Your Role (e.g., Principal Investigator)" data-grant-field="role" data-grant-index="${index}">
+        <input type="text" class="form-input" placeholder="Year(s) (e.g., 2023-2025)" data-grant-field="year" data-grant-index="${index}">
+        <input type="text" class="form-input" placeholder="Amount (optional)" data-grant-field="amount" data-grant-index="${index}">
+    `;
+
+    container.appendChild(itemDiv);
+
+    // Add event listeners to new fields
+    itemDiv.querySelectorAll('[data-grant-field]').forEach(field => {
+        field.addEventListener('input', debounce((e) => {
+            const idx = parseInt(e.target.dataset.grantIndex);
+            const fieldName = e.target.dataset.grantField;
+            resumeState.grants[idx][fieldName] = e.target.value;
+            updatePreview();
+        }, 300));
+    });
+}
+
+function removeGrant(index) {
+    resumeState.grants.splice(index, 1);
+    rebuildGrantsUI();
+    updatePreview();
+}
+
+function rebuildGrantsUI() {
+    const container = document.getElementById('grantsContainer');
+    container.innerHTML = '';
+    const grantCopy = [...resumeState.grants];
+    resumeState.grants = [];
+    grantCopy.forEach((item) => {
+        const idx = resumeState.grants.length;
+        resumeState.grants.push(item);
+        addGrant();
+        // Set values
+        Object.keys(item).forEach(key => {
+            const field = container.querySelector(`[data-grant-field="${key}"][data-grant-index="${idx}"]`);
+            if (field) field.value = item[key];
+        });
+    });
+}
+
+function addTeaching() {
+    const container = document.getElementById('teachingContainer');
+    const index = resumeState.teaching.length;
+
+    const teachingItem = {
+        course: '',
+        term: ''
+    };
+
+    resumeState.teaching.push(teachingItem);
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'form-item';
+    itemDiv.innerHTML = `
+        <div class="form-item-header">
+            <span>Teaching ${index + 1}</span>
+            <button type="button" class="remove-item-btn" onclick="removeTeaching(${index})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+        <input type="text" class="form-input" placeholder="Course Name & Code" data-teach-field="course" data-teach-index="${index}">
+        <input type="text" class="form-input" placeholder="Term (e.g., Fall 2023, Spring 2024)" data-teach-field="term" data-teach-index="${index}">
+    `;
+
+    container.appendChild(itemDiv);
+
+    // Add event listeners to new fields
+    itemDiv.querySelectorAll('[data-teach-field]').forEach(field => {
+        field.addEventListener('input', debounce((e) => {
+            const idx = parseInt(e.target.dataset.teachIndex);
+            const fieldName = e.target.dataset.teachField;
+            resumeState.teaching[idx][fieldName] = e.target.value;
+            updatePreview();
+        }, 300));
+    });
+}
+
+function removeTeaching(index) {
+    resumeState.teaching.splice(index, 1);
+    rebuildTeachingUI();
+    updatePreview();
+}
+
+function rebuildTeachingUI() {
+    const container = document.getElementById('teachingContainer');
+    container.innerHTML = '';
+    const teachCopy = [...resumeState.teaching];
+    resumeState.teaching = [];
+    teachCopy.forEach((item) => {
+        const idx = resumeState.teaching.length;
+        resumeState.teaching.push(item);
+        addTeaching();
+        // Set values
+        Object.keys(item).forEach(key => {
+            const field = container.querySelector(`[data-teach-field="${key}"][data-teach-index="${idx}"]`);
+            if (field) field.value = item[key];
+        });
     });
 }
 
@@ -319,8 +737,17 @@ function loadResumeData() {
     if (resumeData.experience) {
         try {
             const expData = typeof resumeData.experience === 'string' ? JSON.parse(resumeData.experience) : resumeData.experience;
-            resumeState.experience = expData;
-            expData.forEach(() => addExperience());
+            resumeState.experience = [];
+            expData.forEach((item) => {
+                const idx = resumeState.experience.length;
+                resumeState.experience.push(item);
+                addExperience();
+                // Set values
+                Object.keys(item).forEach(key => {
+                    const field = document.querySelector(`[data-exp-field="${key}"][data-exp-index="${idx}"]`);
+                    if (field) field.value = item[key];
+                });
+            });
         } catch (e) {
             console.error('Error loading experience:', e);
         }
@@ -330,8 +757,17 @@ function loadResumeData() {
     if (resumeData.education) {
         try {
             const eduData = typeof resumeData.education === 'string' ? JSON.parse(resumeData.education) : resumeData.education;
-            resumeState.education = eduData;
-            eduData.forEach(() => addEducation());
+            resumeState.education = [];
+            eduData.forEach((item) => {
+                const idx = resumeState.education.length;
+                resumeState.education.push(item);
+                addEducation();
+                // Set values
+                Object.keys(item).forEach(key => {
+                    const field = document.querySelector(`[data-edu-field="${key}"][data-edu-index="${idx}"]`);
+                    if (field) field.value = item[key];
+                });
+            });
         } catch (e) {
             console.error('Error loading education:', e);
         }
@@ -340,12 +776,84 @@ function loadResumeData() {
     // Load skills
     if (resumeData.skills) {
         try {
-            const skillsData = typeof resumeData.skills === 'string' ? JSON.parse(resumeData.skills) : resumeData.skills;
+            const skillsData = typeof resumeData.skills === 'string' ? resumeData.skills : JSON.stringify(resumeData.skills);
             resumeState.skills = skillsData;
-            document.getElementById('skills').value = skillsData.join(', ');
+            document.getElementById('skills').value = skillsData;
         } catch (e) {
             console.error('Error loading skills:', e);
         }
+    }
+
+    // Load research interests
+    if (resumeData.researchInterests) {
+        resumeState.researchInterests = resumeData.researchInterests;
+        document.getElementById('researchInterests').value = resumeData.researchInterests;
+    }
+
+    // Load publications
+    if (resumeData.publications) {
+        try {
+            const pubData = typeof resumeData.publications === 'string' ? JSON.parse(resumeData.publications) : resumeData.publications;
+            resumeState.publications = [];
+            pubData.forEach((item) => {
+                const idx = resumeState.publications.length;
+                resumeState.publications.push(item);
+                addPublication();
+                // Set values
+                Object.keys(item).forEach(key => {
+                    const field = document.querySelector(`[data-pub-field="${key}"][data-pub-index="${idx}"]`);
+                    if (field) field.value = item[key];
+                });
+            });
+        } catch (e) {
+            console.error('Error loading publications:', e);
+        }
+    }
+
+    // Load grants
+    if (resumeData.grants) {
+        try {
+            const grantData = typeof resumeData.grants === 'string' ? JSON.parse(resumeData.grants) : resumeData.grants;
+            resumeState.grants = [];
+            grantData.forEach((item) => {
+                const idx = resumeState.grants.length;
+                resumeState.grants.push(item);
+                addGrant();
+                // Set values
+                Object.keys(item).forEach(key => {
+                    const field = document.querySelector(`[data-grant-field="${key}"][data-grant-index="${idx}"]`);
+                    if (field) field.value = item[key];
+                });
+            });
+        } catch (e) {
+            console.error('Error loading grants:', e);
+        }
+    }
+
+    // Load teaching
+    if (resumeData.teaching) {
+        try {
+            const teachData = typeof resumeData.teaching === 'string' ? JSON.parse(resumeData.teaching) : resumeData.teaching;
+            resumeState.teaching = [];
+            teachData.forEach((item) => {
+                const idx = resumeState.teaching.length;
+                resumeState.teaching.push(item);
+                addTeaching();
+                // Set values
+                Object.keys(item).forEach(key => {
+                    const field = document.querySelector(`[data-teach-field="${key}"][data-teach-index="${idx}"]`);
+                    if (field) field.value = item[key];
+                });
+            });
+        } catch (e) {
+            console.error('Error loading teaching:', e);
+        }
+    }
+
+    // Load memberships
+    if (resumeData.memberships) {
+        resumeState.memberships = resumeData.memberships;
+        document.getElementById('memberships').value = resumeData.memberships;
     }
 }
 
@@ -366,7 +874,12 @@ async function saveResume() {
         formData.append('summary_text', resumeState.summary_text);
         formData.append('experience', JSON.stringify(resumeState.experience));
         formData.append('education', JSON.stringify(resumeState.education));
-        formData.append('skills', JSON.stringify(resumeState.skills));
+        formData.append('skills', resumeState.skills);
+        formData.append('researchInterests', resumeState.researchInterests);
+        formData.append('publications', JSON.stringify(resumeState.publications));
+        formData.append('grants', JSON.stringify(resumeState.grants));
+        formData.append('teaching', JSON.stringify(resumeState.teaching));
+        formData.append('memberships', resumeState.memberships);
         formData.append('status', 'draft');
 
         const response = await fetch('/ATS/api/save-resume.php', {
@@ -378,7 +891,7 @@ async function saveResume() {
 
         if (result.success) {
             resumeState.id = result.resume_id;
-            showNotification('Resume saved successfully!', 'success');
+            showNotificationModal('Resume saved successfully!', 'success');
 
             // Update URL if this was a new resume
             if (!resumeData.id) {
@@ -387,11 +900,11 @@ async function saveResume() {
                 resumeData.id = result.resume_id;
             }
         } else {
-            showNotification('Error saving resume: ' + result.message, 'error');
+            showNotificationModal('Error saving resume: ' + result.message, 'error');
         }
     } catch (error) {
         console.error('Save error:', error);
-        showNotification('Error saving resume. Please try again.', 'error');
+        showNotificationModal('Error saving resume. Please try again.', 'error');
     } finally {
         saveBtn.textContent = originalText;
         saveBtn.disabled = false;
@@ -401,83 +914,31 @@ async function saveResume() {
 async function downloadPDF() {
     const downloadBtn = document.getElementById('downloadBtn');
     const originalText = downloadBtn.textContent;
-    downloadBtn.textContent = 'Generating...';
-    downloadBtn.disabled = true;
 
     try {
         const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
-        const { jsPDF } = window.jspdf;
+        const iframeWindow = previewIframe.contentWindow;
 
-        const canvas = await html2canvas(iframeDoc.body, {
-            scale: 2,
-            useCORS: true,
-            logging: false
-        });
+        // Open browser's native print dialog
+        // This uses the browser's PDF engine which provides:
+        // - Perfect text rendering (vector-based, searchable)
+        // - Intelligent page breaking based on CSS @page rules
+        // - Professional quality output
+        iframeWindow.print();
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
+        // Note: Browser print dialog lets users:
+        // - Choose "Save as PDF" destination
+        // - Adjust page settings if needed
+        // - Preview before saving
 
-        const imgWidth = 210;
-        const pageHeight = 297;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-
-        const fileName = (document.getElementById('resumeTitle').value || 'resume') + '.pdf';
-        pdf.save(fileName);
-
-        showNotification('PDF downloaded successfully!', 'success');
     } catch (error) {
-        console.error('Download error:', error);
-        showNotification('Error generating PDF. Please try again.', 'error');
-    } finally {
-        downloadBtn.textContent = originalText;
-        downloadBtn.disabled = false;
+        console.error('Print error:', error);
+        showNotificationModal('Error opening print dialog. Please try again.', 'error');
     }
 }
 
 function setupZoomControls() {
-    // Check if zoom controls exist
-    const zoomInBtn = document.getElementById('zoomInBtn');
-    const zoomOutBtn = document.getElementById('zoomOutBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const wrapper = document.getElementById('previewWrapper');
-    const zoomDisplay = document.getElementById('zoomLevel');
-
-    if (!zoomInBtn || !zoomOutBtn || !wrapper || !zoomDisplay) return;
-
-    let zoomLevel = 100;
-
-    zoomInBtn.addEventListener('click', () => {
-        if (zoomLevel < 150) {
-            zoomLevel += 10;
-            wrapper.style.transform = `scale(${zoomLevel / 100})`;
-            zoomDisplay.textContent = zoomLevel + '%';
-        }
-    });
-
-    zoomOutBtn.addEventListener('click', () => {
-        if (zoomLevel > 50) {
-            zoomLevel -= 10;
-            wrapper.style.transform = `scale(${zoomLevel / 100})`;
-            zoomDisplay.textContent = zoomLevel + '%';
-        }
-    });
-
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            loadTemplatePreview();
-        });
-    }
-}
-
-function showNotification(message, type = 'info') {
-    // Simple notification - you can enhance this
-    alert(message);
+    // Zoom controls not implemented for this editor
 }
 
 function debounce(func, wait) {

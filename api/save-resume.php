@@ -33,6 +33,21 @@ $personalDetails = json_encode($input['personal_details'] ?? []);
 $summaryText = $input['summary_text'] ?? '';
 $status = $input['status'] ?? 'draft';
 
+// Handle additional fields
+$experience = isset($input['experience']) ? (is_string($input['experience']) ? $input['experience'] : json_encode($input['experience'])) : '[]';
+$education = isset($input['education']) ? (is_string($input['education']) ? $input['education'] : json_encode($input['education'])) : '[]';
+$skills = isset($input['skills']) ? (is_string($input['skills']) ? $input['skills'] : json_encode($input['skills'])) : '[]';
+$certifications = isset($input['certifications']) ? (is_string($input['certifications']) ? $input['certifications'] : json_encode($input['certifications'])) : '[]';
+$languages = $input['languages'] ?? '';
+$affiliations = $input['affiliations'] ?? '';
+
+// Academic-specific fields
+$researchInterests = $input['researchInterests'] ?? '';
+$publications = isset($input['publications']) ? (is_string($input['publications']) ? $input['publications'] : json_encode($input['publications'])) : '[]';
+$grants = isset($input['grants']) ? (is_string($input['grants']) ? $input['grants'] : json_encode($input['grants'])) : '[]';
+$teaching = isset($input['teaching']) ? (is_string($input['teaching']) ? $input['teaching'] : json_encode($input['teaching'])) : '[]';
+$memberships = $input['memberships'] ?? '';
+
 if (empty($resumeTitle)) {
     echo json_encode(['success' => false, 'message' => 'Resume title is required']);
     exit();
@@ -47,8 +62,8 @@ if (!$conn) {
 try {
     if ($resumeId) {
         // Update existing resume
-        $stmt = $conn->prepare("UPDATE resumes SET resume_title = ?, template_name = ?, personal_details = ?, summary_text = ?, status = ?, updated_at = NOW() WHERE resume_id = ? AND user_id = ?");
-        $stmt->bind_param("sssssii", $resumeTitle, $templateName, $personalDetails, $summaryText, $status, $resumeId, $userId);
+        $stmt = $conn->prepare("UPDATE resumes SET resume_title = ?, template_name = ?, personal_details = ?, summary_text = ?, experience = ?, education = ?, skills = ?, certifications = ?, languages = ?, affiliations = ?, research_interests = ?, publications = ?, grants = ?, teaching = ?, memberships = ?, status = ?, updated_at = NOW() WHERE resume_id = ? AND user_id = ?");
+        $stmt->bind_param("ssssssssssssssssii", $resumeTitle, $templateName, $personalDetails, $summaryText, $experience, $education, $skills, $certifications, $languages, $affiliations, $researchInterests, $publications, $grants, $teaching, $memberships, $status, $resumeId, $userId);
 
         if ($stmt->execute()) {
             echo json_encode([
@@ -62,8 +77,8 @@ try {
         $stmt->close();
     } else {
         // Create new resume
-        $stmt = $conn->prepare("INSERT INTO resumes (user_id, resume_title, template_name, personal_details, summary_text, status) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("isssss", $userId, $resumeTitle, $templateName, $personalDetails, $summaryText, $status);
+        $stmt = $conn->prepare("INSERT INTO resumes (user_id, resume_title, template_name, personal_details, summary_text, experience, education, skills, certifications, languages, affiliations, research_interests, publications, grants, teaching, memberships, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("issssssssssssssss", $userId, $resumeTitle, $templateName, $personalDetails, $summaryText, $experience, $education, $skills, $certifications, $languages, $affiliations, $researchInterests, $publications, $grants, $teaching, $memberships, $status);
 
         if ($stmt->execute()) {
             $newResumeId = $stmt->insert_id;
@@ -73,11 +88,23 @@ try {
                 'resume_id' => $newResumeId
             ]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to create resume']);
+            $error = $stmt->error;
+            error_log("SQL Error creating resume: " . $error);
+            error_log("Resume data: " . json_encode([
+                'userId' => $userId,
+                'resumeTitle' => $resumeTitle,
+                'templateName' => $templateName,
+                'experience' => substr($experience, 0, 100),
+                'education' => substr($education, 0, 100)
+            ]));
+            echo json_encode(['success' => false, 'message' => 'Failed to create resume: ' . $error]);
         }
         $stmt->close();
     }
 } catch (Exception $e) {
+    error_log("Exception saving resume: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
+
+$conn->close();
 ?>

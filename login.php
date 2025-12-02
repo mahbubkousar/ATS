@@ -67,11 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="auth-body">
     <nav class="floating-nav">
         <div class="nav-content">
-            <a href="index.html" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
+            <a href="index.php" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
             <div class="nav-links">
-                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.php" class="nav-link">Home</a>
                 <a href="score-checker.php" class="nav-link">ATS Checker</a>
-                <a href="about.html" class="nav-link">About</a>
+                <a href="ats-converter.php" class="nav-link">ATS Converter</a>
             </div>
         </div>
     </nav>

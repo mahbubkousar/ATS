@@ -1,695 +1,660 @@
-// AI Editor JavaScript
+// AI Editor JavaScript - Redesigned for Multi-Template Support
+// Version 2.0 - Integrated with static editor architecture
 
-// Elements
-const chatForm = document.getElementById('chatForm');
-const chatInput = document.getElementById('chatInput');
-const chatMessages = document.getElementById('chatMessages');
-const sendBtn = document.getElementById('sendBtn');
-const newChatBtn = document.getElementById('newChatBtn');
-const quickActionBtns = document.querySelectorAll('.quick-action-btn');
-const resumePreview = document.getElementById('resumePreview');
-const zoomInBtn = document.getElementById('zoomInBtn');
-const zoomOutBtn = document.getElementById('zoomOutBtn');
-const zoomLevel = document.getElementById('zoomLevel');
-const refreshBtn = document.getElementById('refreshBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-const saveResumeBtn = document.getElementById('saveResumeBtn');
-const templateModal = document.getElementById('templateModal');
-const categoryBtns = document.querySelectorAll('.category-btn');
-const templateCards = document.querySelectorAll('.template-card');
-const selectTemplateBtns = document.querySelectorAll('.select-template-btn');
-
-// State
-let currentZoom = 100;
-let conversationHistory = [];
+// Global state
 let resumeState = {
-    template: '',
-    resume_id: null,
-    personal_details: {},
-    summary_text: '',
+    id: resumeData.id || null,
+    resume_title: resumeData.resume_title || 'AI Generated Resume',
+    template_name: resumeData.template_name || null,
+    personal_details: resumeData.personal_details || {},
+    summary_text: resumeData.summary_text || '',
     experience: [],
     education: [],
     skills: '',
-    projects: [],
-    achievements: '',
-    portfolio: [],
-    board: [],
-    research_interests: '',
+    certifications: [],
+    languages: '',
+    status: 'draft',
+    // Academic-specific fields
+    researchInterests: '',
     publications: [],
     grants: [],
     teaching: [],
-    references: [],
-    conversation_stage: 'welcome',
-    completed_stages: []
+    memberships: ''
 };
+
+let conversationHistory = [];
+let previewIframe = null;
+let currentZoom = 100;
+let isProcessing = false;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Show template modal on first load
-    const hasSelectedTemplate = sessionStorage.getItem('selectedTemplate');
-    if (!hasSelectedTemplate) {
-        templateModal.classList.add('show');
-        templateModal.classList.remove('hidden');
+    previewIframe = document.getElementById('resumePreview');
+
+    // Show template selection modal if no template selected
+    if (!resumeState.template_name) {
+        showTemplateSelectionModal();
     } else {
-        // Load saved resume state
-        const savedState = sessionStorage.getItem('resumeState');
-        if (savedState) {
-            const parsed = JSON.parse(savedState);
-            Object.assign(resumeState, parsed);
-
-            // Load template preview
-            if (resumeState.template) {
-                loadTemplatePreview(resumeState.template);
-            }
-        }
+        initializeEditor();
     }
+
+    setupEventListeners();
 });
 
-// Template Modal: Category filtering
-categoryBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Update active button
-        categoryBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+// Template Selection Modal
+function showTemplateSelectionModal() {
+    const modal = document.getElementById('templateSelectionModal');
+    if (modal) {
+        modal.classList.add('show');
 
-        const category = btn.dataset.category;
-
-        // Filter template cards
-        templateCards.forEach(card => {
-            if (category === 'all' || card.dataset.category === category) {
-                card.classList.remove('hidden');
-            } else {
-                card.classList.add('hidden');
-            }
+        // Setup template selection buttons
+        const selectButtons = modal.querySelectorAll('.select-template-btn');
+        selectButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const templateName = this.dataset.template;
+                selectTemplate(templateName);
+            });
         });
-    });
-});
-
-// Template Modal: Select template
-selectTemplateBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const templateName = btn.dataset.template;
-        selectTemplate(templateName);
-    });
-});
-
-// Also allow clicking on card to select
-templateCards.forEach(card => {
-    card.addEventListener('click', (e) => {
-        // Don't trigger if clicking on the button
-        if (e.target.classList.contains('select-template-btn')) return;
-
-        const templateName = card.dataset.template;
-        selectTemplate(templateName);
-    });
-});
+    }
+}
 
 function selectTemplate(templateName) {
-    // Get template configuration
-    const templateConfig = getTemplateConfig(templateName);
-
-    // Update resume state
-    resumeState.template = templateName;
-    resumeState.conversation_stage = 'personal_details';
-    resumeState.completed_stages = ['welcome'];
-
-    // Store in session (exclude iframe reference)
-    sessionStorage.setItem('selectedTemplate', templateName);
-    const { previewIframe, ...stateToSave } = resumeState;
-    sessionStorage.setItem('resumeState', JSON.stringify(stateToSave));
+    resumeState.template_name = templateName;
 
     // Hide modal
-    templateModal.classList.remove('show');
-    templateModal.classList.add('hidden');
+    const modal = document.getElementById('templateSelectionModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
 
-    // Clear existing conversation
-    chatMessages.innerHTML = '';
-
-    // Show welcome message
-    const welcomeMsg = `Great choice! Let's build your ${templateConfig.name} resume. I'll guide you through each section step by step.\n\nLet's start with your personal information. Please tell me your full name, email, phone number, and location.`;
-    addMessage(welcomeMsg, 'assistant');
-
-    // Initialize preview
-    loadTemplatePreview(templateName);
-
-    showNotification(`${templateConfig.name} template selected`);
+    // Initialize editor with selected template
+    initializeEditor();
 }
 
-// Auto-resize textarea
-if (chatInput) {
-    chatInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
-    });
-}
+function initializeEditor() {
+    // Show template indicator
+    const indicator = document.getElementById('templateIndicator');
+    const templateDisplay = document.getElementById('templateNameDisplay');
+    if (indicator && templateDisplay) {
+        indicator.style.display = 'flex';
+        const templateNames = {
+            'modern': 'Modern',
+            'professional': 'Professional',
+            'academic-standard': 'Academic Standard'
+        };
+        templateDisplay.textContent = templateNames[resumeState.template_name] || resumeState.template_name;
+    }
 
-// Send message
-if (chatForm) {
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const message = chatInput.value.trim();
+    // Load template into iframe
+    loadTemplate();
 
-        if (message) {
-            // Check if template is selected
-            if (!resumeState.template) {
-                showNotification('Please select a template first');
-                templateModal.classList.add('show');
-                templateModal.classList.remove('hidden');
-                return;
-            }
-
-            // Add user message to chat
-            addMessage(message, 'user');
-            chatInput.value = '';
-            chatInput.style.height = 'auto';
-
-            // Show typing indicator
-            const typingIndicator = showTypingIndicator();
-
-            try {
-                // Call AI conversation API
-                const response = await fetch('/ATS/api/ai-conversation.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: message,
-                        resumeState: resumeState,
-                        conversationHistory: conversationHistory
-                    })
-                });
-
-                const result = await response.json();
-
-                // Remove typing indicator
-                typingIndicator.remove();
-
-                console.log('=== AI CONVERSATION RESPONSE ===');
-                console.log('Current stage:', result.current_stage);
-                console.log('Next stage:', result.next_stage);
-                console.log('Extracted data:', result.extracted_data);
-                console.log('API Response:', result);
-
-                if (result.success) {
-                    // Add AI response to chat
-                    const aiMessage = result.ai_message.replace(/```json.*?```/gs, '').trim();
-                    addMessage(aiMessage, 'assistant');
-
-                    // Update resume state with extracted data
-                    let dataExtracted = false;
-                    if (result.extracted_data && Object.keys(result.extracted_data).length > 0) {
-                        console.log('Extracted data found:', result.extracted_data);
-                        updateResumeState(result.extracted_data);
-                        dataExtracted = true;
-                    } else {
-                        console.log('No extracted data in response');
-                    }
-
-                    // Update conversation stage
-                    if (result.next_stage) {
-                        resumeState.conversation_stage = result.next_stage;
-                        if (!resumeState.completed_stages.includes(resumeState.conversation_stage)) {
-                            resumeState.completed_stages.push(resumeState.conversation_stage);
-                        }
-                    }
-
-                    // ALWAYS update preview when data was extracted
-                    if (dataExtracted) {
-                        console.log('Updating preview because data was extracted');
-                        updateResumePreview();
-                    }
-
-                    // Save state to session (exclude iframe reference)
-                    const { previewIframe, ...stateToSave } = resumeState;
-                    sessionStorage.setItem('resumeState', JSON.stringify(stateToSave));
-                } else {
-                    addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
-                    console.error('AI Error:', result);
-                }
-            } catch (error) {
-                typingIndicator.remove();
-                addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
-                console.error('Fetch Error:', error);
-            }
+    // Load existing data if editing
+    if (resumeData.experience) {
+        try {
+            resumeState.experience = typeof resumeData.experience === 'string' ?
+                JSON.parse(resumeData.experience) : resumeData.experience;
+        } catch(e) {
+            console.error('Error loading experience:', e);
         }
-    });
+    }
+
+    if (resumeData.education) {
+        try {
+            resumeState.education = typeof resumeData.education === 'string' ?
+                JSON.parse(resumeData.education) : resumeData.education;
+        } catch(e) {
+            console.error('Error loading education:', e);
+        }
+    }
+
+    if (resumeData.skills) {
+        resumeState.skills = resumeData.skills;
+    }
+
+    // Update preview after loading
+    setTimeout(() => updatePreview(), 500);
 }
 
-// Add message to chat
-function addMessage(text, sender) {
+function loadTemplate() {
+    if (!previewIframe || !resumeState.template_name) return;
+
+    previewIframe.src = `templates/${resumeState.template_name}.html?v=${Date.now()}`;
+
+    previewIframe.onload = () => {
+        updatePreview();
+    };
+}
+
+// Event Listeners Setup
+function setupEventListeners() {
+    // Chat form submission
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    if (chatForm) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (message && !isProcessing) {
+                await handleUserMessage(message);
+                chatInput.value = '';
+                chatInput.style.height = 'auto';
+            }
+        });
+    }
+
+    // Auto-resize textarea
+    if (chatInput) {
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    }
+
+    // Quick action buttons
+    const quickActionBtns = document.querySelectorAll('.quick-action-btn');
+    quickActionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const action = btn.dataset.action;
+            handleQuickAction(action);
+        });
+    });
+
+    // New chat / Reset button
+    const newChatBtn = document.getElementById('newChatBtn');
+    if (newChatBtn) {
+        newChatBtn.addEventListener('click', resetConversation);
+    }
+
+    // Zoom controls
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => adjustZoom(10));
+    }
+
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => adjustZoom(-10));
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => updatePreview());
+    }
+
+    // Save button
+    const saveBtn = document.getElementById('saveResumeBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveResume);
+    }
+
+    // Download/Print button
+    const downloadBtn = document.getElementById('downloadBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', downloadPDF);
+    }
+}
+
+// Handle user message
+async function handleUserMessage(message) {
+    if (isProcessing) return;
+
+    // Add user message to chat
+    addMessageToChat('user', message);
+
+    // Add to conversation history
+    conversationHistory.push({
+        role: 'user',
+        content: message
+    });
+
+    isProcessing = true;
+    const sendBtn = document.getElementById('sendBtn');
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    }
+
+    try {
+        // Call AI API
+        const response = await fetch('api/ai-conversation.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message,
+                conversationHistory: conversationHistory,
+                resumeState: resumeState,
+                templateName: resumeState.template_name
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Add AI response to chat
+            addMessageToChat('assistant', data.response);
+
+            // Add to conversation history
+            conversationHistory.push({
+                role: 'assistant',
+                content: data.response
+            });
+
+            // Update resume state if AI extracted data
+            if (data.updates && Object.keys(data.updates).length > 0) {
+                console.log('Applying updates:', data.updates);
+                applyUpdates(data.updates);
+                updatePreview();
+                console.log('Updated resume state:', resumeState);
+            }
+        } else {
+            addMessageToChat('assistant', 'Sorry, I encountered an error. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        addMessageToChat('assistant', 'Sorry, I encountered an error. Please try again.');
+    } finally {
+        isProcessing = false;
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+        }
+    }
+}
+
+// Add message to chat UI
+function addMessageToChat(role, content) {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${sender}-message`;
+    messageDiv.className = `message ${role === 'user' ? 'user-message' : 'assistant-message'}`;
 
-    const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
-    avatar.innerHTML = sender === 'assistant'
-        ? '<i class="fa-solid fa-robot"></i>'
-        : '<i class="fa-solid fa-user"></i>';
+    const avatarIcon = role === 'user' ? 'fa-user' : 'fa-robot';
 
-    const content = document.createElement('div');
-    content.className = 'message-content';
-
-    const p = document.createElement('p');
-    p.textContent = text;
-    content.appendChild(p);
-
-    messageDiv.appendChild(avatar);
-    messageDiv.appendChild(content);
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fa-solid ${avatarIcon}"></i>
+        </div>
+        <div class="message-content">
+            <p>${content}</p>
+        </div>
+    `;
 
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    conversationHistory.push({ sender, text });
 }
 
-// Show typing indicator
-function showTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'message assistant-message typing-indicator';
-    typingDiv.innerHTML = `
-        <div class="message-avatar">
-            <i class="fa-solid fa-robot"></i>
-        </div>
-        <div class="message-content">
-            <p>
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-            </p>
-        </div>
-    `;
-    chatMessages.appendChild(typingDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return typingDiv;
-}
+// Apply updates from AI
+function applyUpdates(updates) {
+    console.log('Applying updates to resume state...');
 
-// Update resume state with extracted data
-function updateResumeState(extractedData) {
-    console.log('updateResumeState called with extractedData:', extractedData);
-
-    // Personal details
-    if (extractedData.fullName || extractedData.email || extractedData.phone || extractedData.professionalTitle) {
-        resumeState.personal_details = {
-            ...resumeState.personal_details,
-            fullName: extractedData.fullName || resumeState.personal_details.fullName || '',
-            professionalTitle: extractedData.professionalTitle || resumeState.personal_details.professionalTitle || '',
-            email: extractedData.email || resumeState.personal_details.email || '',
-            phone: extractedData.phone || resumeState.personal_details.phone || '',
-            location: extractedData.location || resumeState.personal_details.location || '',
-            linkedin: extractedData.linkedin || resumeState.personal_details.linkedin || ''
-        };
+    if (updates.personal_details) {
+        Object.assign(resumeState.personal_details, updates.personal_details);
         console.log('Updated personal_details:', resumeState.personal_details);
     }
 
-    // Summary
-    if (extractedData.summary) {
-        resumeState.summary_text = extractedData.summary;
-        console.log('Updated summary_text:', resumeState.summary_text);
+    if (updates.summary_text || updates.summary) {
+        resumeState.summary_text = updates.summary_text || updates.summary;
+        console.log('Updated summary:', resumeState.summary_text);
     }
 
-    // Experience
-    if (extractedData.experience && Array.isArray(extractedData.experience)) {
-        resumeState.experience = [...resumeState.experience, ...extractedData.experience];
-        console.log('Updated experience:', resumeState.experience);
+    if (updates.experience) {
+        if (Array.isArray(updates.experience)) {
+            resumeState.experience = updates.experience;
+            console.log('Updated experience:', resumeState.experience);
+        }
     }
 
-    // Education
-    if (extractedData.education && Array.isArray(extractedData.education)) {
-        resumeState.education = [...resumeState.education, ...extractedData.education];
-        console.log('Updated education:', resumeState.education);
+    if (updates.education) {
+        if (Array.isArray(updates.education)) {
+            resumeState.education = updates.education;
+            console.log('Updated education:', resumeState.education);
+        }
     }
 
-    // Skills
-    if (extractedData.skills) {
-        resumeState.skills = extractedData.skills;
+    if (updates.skills) {
+        resumeState.skills = updates.skills;
         console.log('Updated skills:', resumeState.skills);
     }
 
-    // Projects (Technical template)
-    if (extractedData.projects && Array.isArray(extractedData.projects)) {
-        resumeState.projects = [...resumeState.projects, ...extractedData.projects];
+    if (updates.certifications) {
+        resumeState.certifications = updates.certifications;
     }
 
-    // Achievements (Executive template)
-    if (extractedData.achievements) {
-        resumeState.achievements = extractedData.achievements;
+    if (updates.languages) {
+        resumeState.languages = updates.languages;
     }
 
-    // Research interests (Academic templates)
-    if (extractedData.research_interests) {
-        resumeState.research_interests = extractedData.research_interests;
+    // Academic fields
+    if (updates.researchInterests) {
+        resumeState.researchInterests = updates.researchInterests;
     }
 
-    // Publications (Academic templates)
-    if (extractedData.publications && Array.isArray(extractedData.publications)) {
-        resumeState.publications = [...resumeState.publications, ...extractedData.publications];
+    if (updates.publications) {
+        resumeState.publications = updates.publications;
     }
 
-    // References (Academic templates)
-    if (extractedData.references && Array.isArray(extractedData.references)) {
-        resumeState.references = [...resumeState.references, ...extractedData.references];
+    if (updates.grants) {
+        resumeState.grants = updates.grants;
+    }
+
+    if (updates.teaching) {
+        resumeState.teaching = updates.teaching;
+    }
+
+    if (updates.memberships) {
+        resumeState.memberships = updates.memberships;
     }
 }
 
-// Load template preview
-function loadTemplatePreview(templateName) {
-    if (!templateName) {
-        resumePreview.innerHTML = `
-            <div class="preview-placeholder">
-                <i class="fa-solid fa-file-lines"></i>
-                <p>Your resume will appear here as you chat with the AI assistant</p>
-            </div>
-        `;
-        return;
-    }
+// Quick action handlers
+function handleQuickAction(action) {
+    const chatInput = document.getElementById('chatInput');
+    if (!chatInput) return;
 
-    // Create iframe to load template preview
-    const iframe = document.createElement('iframe');
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    iframe.src = `/ATS/templates/preview-handler.php?template=${templateName}&mode=full`;
-    iframe.id = 'previewIframe';
-
-    resumePreview.innerHTML = '';
-    resumePreview.appendChild(iframe);
-
-    // Store iframe reference for later updates
-    resumeState.previewIframe = iframe;
-
-    // Wait for iframe to load, then send initial data
-    iframe.onload = () => {
-        console.log('Preview iframe loaded');
-        updateResumePreview();
-    };
-}
-
-// Update resume preview with current data
-function updateResumePreview() {
-    console.log('updateResumePreview called');
-    const iframe = resumeState.previewIframe;
-
-    if (!iframe) {
-        console.error('No iframe found in resumeState');
-        return;
-    }
-
-    if (!iframe.contentWindow) {
-        console.error('iframe.contentWindow is null or undefined');
-        return;
-    }
-
-    // Create a clean copy of resumeState without the iframe reference
-    const cleanState = {
-        template: resumeState.template,
-        resume_id: resumeState.resume_id,
-        personal_details: resumeState.personal_details,
-        summary_text: resumeState.summary_text,
-        experience: resumeState.experience,
-        education: resumeState.education,
-        skills: resumeState.skills,
-        projects: resumeState.projects,
-        achievements: resumeState.achievements,
-        portfolio: resumeState.portfolio,
-        board: resumeState.board,
-        research_interests: resumeState.research_interests,
-        publications: resumeState.publications,
-        grants: resumeState.grants,
-        teaching: resumeState.teaching,
-        references: resumeState.references,
-        conversation_stage: resumeState.conversation_stage,
-        completed_stages: resumeState.completed_stages
+    const prompts = {
+        'add-experience': 'I\'d like to add my work experience. I worked as [Job Title] at [Company Name] from [Start Date] to [End Date]. My responsibilities included...',
+        'add-education': 'I\'d like to add my education. I have a [Degree] in [Field of Study] from [University Name], graduated in [Year].',
+        'add-skills': 'Here are my key skills: [List your technical skills, soft skills, certifications, etc.]'
     };
 
-    console.log('Sending postMessage to iframe with data:', cleanState);
-
-    // Send resume data to iframe (without the iframe reference)
-    iframe.contentWindow.postMessage({
-        type: 'updateResume',
-        data: cleanState
-    }, '*');
-
-    console.log('postMessage sent successfully');
+    chatInput.value = prompts[action] || '';
+    chatInput.focus();
+    chatInput.style.height = 'auto';
+    chatInput.style.height = (chatInput.scrollHeight) + 'px';
 }
 
-// Quick actions
-quickActionBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const action = btn.dataset.action;
-        let prompt = '';
-
-        switch(action) {
-            case 'add-experience':
-                prompt = 'Add my work experience';
-                break;
-            case 'add-education':
-                prompt = 'Add my education';
-                break;
-            case 'add-skills':
-                prompt = 'Add my skills';
-                break;
-        }
-
-        chatInput.value = prompt;
-        chatInput.focus();
-    });
-});
-
-// New chat
-if (newChatBtn) {
-    newChatBtn.addEventListener('click', () => {
-        if (confirm('Start a new chat? This will clear your current conversation.')) {
-            // Clear session storage
-            sessionStorage.removeItem('selectedTemplate');
-            sessionStorage.removeItem('resumeState');
-
-            // Reset conversation
-            conversationHistory = [];
-            chatMessages.innerHTML = '';
-
-            // Reset resume state
-            resumeState = {
-                template: '',
-                resume_id: null,
-                personal_details: {},
-                summary_text: '',
-                experience: [],
-                education: [],
-                skills: '',
-                projects: [],
-                achievements: '',
-                portfolio: [],
-                board: [],
-                research_interests: '',
-                publications: [],
-                grants: [],
-                teaching: [],
-                references: [],
-                conversation_stage: 'welcome',
-                completed_stages: []
-            };
-
-            // Reset preview
-            resumePreview.innerHTML = `
-                <div class="preview-placeholder">
-                    <i class="fa-solid fa-file-lines"></i>
-                    <p>Your resume will appear here as you chat with the AI assistant</p>
+// Reset conversation
+function resetConversation() {
+    if (confirm('Are you sure you want to start over? This will clear the current conversation but keep your resume data.')) {
+        conversationHistory = [];
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.innerHTML = `
+                <div class="message assistant-message">
+                    <div class="message-avatar">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hi! I'm your AI resume assistant powered by Google Gemini. I'll help you build an ATS-optimized resume through conversation.</p>
+                        <p>Let's start with some basics. <strong>What's your full name and the job title you're targeting?</strong></p>
+                    </div>
                 </div>
             `;
+        }
+    }
+}
 
-            // Show template modal
-            templateModal.classList.add('show');
-            templateModal.classList.remove('hidden');
+// Update preview iframe
+function updatePreview() {
+    const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+    if (!iframeDoc) return;
+
+    // Update based on template type
+    updatePersonalDetails(iframeDoc);
+    updateSummary(iframeDoc);
+    updateExperienceList(iframeDoc);
+    updateEducationList(iframeDoc);
+
+    // Template-specific updates
+    if (resumeState.template_name === 'academic-standard') {
+        updateAcademicFields(iframeDoc);
+    } else {
+        updateSkills(iframeDoc);
+        updateCertifications(iframeDoc);
+        updateLanguages(iframeDoc);
+    }
+}
+
+// Update personal details
+function updatePersonalDetails(iframeDoc) {
+    // Map personal_details fields to template data-field attributes
+    const fieldMapping = {
+        'name': 'fullName',
+        'fullName': 'fullName',
+        'title': 'professionalTitle',
+        'professionalTitle': 'professionalTitle',
+        'email': 'email',
+        'phone': 'phone',
+        'location': 'location',
+        'linkedin': 'linkedin'
+    };
+
+    Object.keys(fieldMapping).forEach(dataField => {
+        const element = iframeDoc.querySelector(`[data-field="${dataField}"]`);
+        if (element) {
+            const stateField = fieldMapping[dataField];
+            const value = resumeState.personal_details[stateField] || resumeState.personal_details[dataField] || '';
+
+            if (value) {
+                element.textContent = value;
+                element.style.display = '';
+            } else {
+                element.textContent = '';
+            }
         }
     });
+}
+
+// Update summary
+function updateSummary(iframeDoc) {
+    const summaryElement = iframeDoc.querySelector('[data-field="summary"]');
+    const summarySection = iframeDoc.querySelector('[data-section="summary"]');
+
+    if (summaryElement && summarySection) {
+        if (resumeState.summary_text && resumeState.summary_text.trim()) {
+            summarySection.style.display = 'block';
+            summaryElement.textContent = resumeState.summary_text;
+        } else {
+            summarySection.style.display = 'none';
+        }
+    }
+}
+
+// Update experience list
+function updateExperienceList(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="experience-list"]');
+    const section = iframeDoc.querySelector('[data-section="experience"]');
+    if (!container || !section) return;
+
+    section.style.display = 'block';
+    container.innerHTML = '';
+
+    if (resumeState.experience && resumeState.experience.length > 0) {
+        resumeState.experience.forEach(item => {
+            const entry = iframeDoc.createElement('div');
+            entry.className = 'entry';
+            entry.innerHTML = `
+                <div class="entry-header">
+                    <div class="entry-title-line">
+                        <div class="entry-title">${item.jobTitle || ''}</div>
+                        <div class="entry-date">${item.dates || ''}</div>
+                    </div>
+                    <div class="entry-company">${item.company || ''}</div>
+                </div>
+                ${item.description ? `<div class="entry-description">${item.description}</div>` : ''}
+            `;
+            container.appendChild(entry);
+        });
+    }
+}
+
+// Update education list
+function updateEducationList(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="education-list"]');
+    const section = iframeDoc.querySelector('[data-section="education"]');
+    if (!container || !section) return;
+
+    section.style.display = 'block';
+    container.innerHTML = '';
+
+    if (resumeState.education && resumeState.education.length > 0) {
+        resumeState.education.forEach(item => {
+            const entry = iframeDoc.createElement('div');
+            entry.className = 'entry';
+            entry.innerHTML = `
+                <div class="entry-header">
+                    <div class="entry-title-line">
+                        <div class="entry-title">${item.degree || ''}</div>
+                        <div class="entry-date">${item.dates || ''}</div>
+                    </div>
+                    <div class="entry-company">${item.institution || ''}</div>
+                </div>
+            `;
+            container.appendChild(entry);
+        });
+    }
+}
+
+// Update skills
+function updateSkills(iframeDoc) {
+    const skillsElement = iframeDoc.querySelector('[data-field="skills"]');
+    const skillsSection = iframeDoc.querySelector('[data-section="skills"]');
+
+    if (skillsElement && skillsSection) {
+        if (resumeState.skills && resumeState.skills.trim()) {
+            skillsSection.style.display = 'block';
+            skillsElement.textContent = resumeState.skills;
+        } else {
+            skillsSection.style.display = 'none';
+        }
+    }
+}
+
+// Update certifications
+function updateCertifications(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="certifications-list"]');
+    const section = iframeDoc.querySelector('[data-section="certifications"]');
+
+    if (container && section && resumeState.certifications && resumeState.certifications.length > 0) {
+        section.style.display = 'block';
+        container.innerHTML = '';
+        resumeState.certifications.forEach(cert => {
+            const entry = iframeDoc.createElement('div');
+            entry.className = 'entry';
+            entry.innerHTML = `<div class="entry-title">${cert.name || ''}</div>`;
+            container.appendChild(entry);
+        });
+    } else if (section) {
+        section.style.display = 'none';
+    }
+}
+
+// Update languages
+function updateLanguages(iframeDoc) {
+    const element = iframeDoc.querySelector('[data-field="languages"]');
+    const section = iframeDoc.querySelector('[data-section="languages"]');
+
+    if (element && section) {
+        if (resumeState.languages && resumeState.languages.trim()) {
+            section.style.display = 'block';
+            element.textContent = resumeState.languages;
+        } else {
+            section.style.display = 'none';
+        }
+    }
+}
+
+// Update academic-specific fields
+function updateAcademicFields(iframeDoc) {
+    // Research interests
+    const riElement = iframeDoc.querySelector('[data-field="research-interests"]');
+    const riSection = iframeDoc.querySelector('[data-section="research-interests"]');
+    if (riElement && riSection) {
+        if (resumeState.researchInterests && resumeState.researchInterests.trim()) {
+            riSection.style.display = 'block';
+            riElement.textContent = resumeState.researchInterests;
+        } else {
+            riSection.style.display = 'none';
+        }
+    }
+
+    // Skills
+    const skillsElement = iframeDoc.querySelector('[data-field="skills"]');
+    const skillsSection = iframeDoc.querySelector('[data-section="skills"]');
+    if (skillsElement && skillsSection) {
+        if (resumeState.skills && resumeState.skills.trim()) {
+            skillsSection.style.display = 'block';
+            skillsElement.textContent = resumeState.skills;
+        } else {
+            skillsSection.style.display = 'none';
+        }
+    }
+
+    // Memberships
+    const membElement = iframeDoc.querySelector('[data-field="memberships"]');
+    const membSection = iframeDoc.querySelector('[data-section="memberships"]');
+    if (membElement && membSection) {
+        if (resumeState.memberships && resumeState.memberships.trim()) {
+            membSection.style.display = 'block';
+            membElement.textContent = resumeState.memberships;
+        } else {
+            membSection.style.display = 'none';
+        }
+    }
 }
 
 // Zoom controls
-if (zoomInBtn) {
-    zoomInBtn.addEventListener('click', () => {
-        if (currentZoom < 150) {
-            currentZoom += 10;
-            updateZoom();
+function adjustZoom(delta) {
+    currentZoom += delta;
+    currentZoom = Math.max(50, Math.min(200, currentZoom));
+
+    const zoomDisplay = document.getElementById('zoomLevel');
+    if (zoomDisplay) {
+        zoomDisplay.textContent = currentZoom + '%';
+    }
+
+    if (previewIframe) {
+        previewIframe.style.transform = `scale(${currentZoom / 100})`;
+        previewIframe.style.transformOrigin = 'top center';
+    }
+}
+
+// Save resume
+async function saveResume() {
+    const saveBtn = document.getElementById('saveResumeBtn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+
+    try {
+        const response = await fetch('api/save-resume.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(resumeState)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            resumeState.id = data.resume_id;
+            showNotificationModal('Resume saved successfully!', 'success');
+        } else {
+            showNotificationModal('Error saving resume: ' + (data.error || 'Unknown error'), 'error');
         }
-    });
+    } catch (error) {
+        console.error('Save error:', error);
+        showNotificationModal('Error saving resume. Please try again.', 'error');
+    } finally {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+    }
 }
 
-if (zoomOutBtn) {
-    zoomOutBtn.addEventListener('click', () => {
-        if (currentZoom > 50) {
-            currentZoom -= 10;
-            updateZoom();
-        }
-    });
+// Download PDF using browser print
+function downloadPDF() {
+    try {
+        const iframeWindow = previewIframe.contentWindow;
+        iframeWindow.print();
+    } catch (error) {
+        console.error('Print error:', error);
+        showNotificationModal('Error opening print dialog. Please try again.', 'error');
+    }
 }
-
-function updateZoom() {
-    resumePreview.style.transform = `scale(${currentZoom / 100})`;
-    resumePreview.style.transformOrigin = 'top center';
-    zoomLevel.textContent = currentZoom + '%';
-}
-
-// Refresh preview
-if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => {
-        updateResumePreview();
-        showNotification('Preview refreshed');
-    });
-}
-
-// Save Resume
-if (saveResumeBtn) {
-    saveResumeBtn.addEventListener('click', async () => {
-        try {
-            // Check if template is selected
-            if (!resumeState.template) {
-                showNotification('Please select a template first');
-                templateModal.classList.add('show');
-                templateModal.classList.remove('hidden');
-                return;
-            }
-
-            // Check if there's any data to save
-            if (!resumeState.personal_details.fullName &&
-                resumeState.experience.length === 0 &&
-                resumeState.education.length === 0) {
-                showNotification('Please add some information before saving');
-                return;
-            }
-
-            // Show loading state
-            saveResumeBtn.disabled = true;
-            saveResumeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-
-            // Prompt for resume title if not set
-            let resumeTitle = resumeState.resume_title;
-            if (!resumeTitle) {
-                resumeTitle = prompt('Enter a title for your resume:', `${resumeState.personal_details.fullName || 'My'} Resume`);
-                if (!resumeTitle) {
-                    saveResumeBtn.disabled = false;
-                    saveResumeBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Resume';
-                    return;
-                }
-            }
-
-            // Call save API
-            const response = await fetch('/ATS/api/save-ai-resume.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    resume_id: resumeState.resume_id,
-                    resume_title: resumeTitle,
-                    template: resumeState.template,
-                    resumeState: resumeState
-                })
-            });
-
-            const result = await response.json();
-
-            // Reset button
-            saveResumeBtn.disabled = false;
-            saveResumeBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Resume';
-
-            if (result.success) {
-                // Update resume state with new ID if created
-                if (result.resume_id) {
-                    resumeState.resume_id = result.resume_id;
-                    resumeState.resume_title = resumeTitle;
-                    const { previewIframe, ...stateToSave } = resumeState;
-                    sessionStorage.setItem('resumeState', JSON.stringify(stateToSave));
-                }
-
-                showNotification(result.message || 'Resume saved successfully!');
-            } else {
-                showNotification('Failed to save resume: ' + (result.error || 'Unknown error'));
-                console.error('Save error:', result);
-            }
-        } catch (error) {
-            saveResumeBtn.disabled = false;
-            saveResumeBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Resume';
-            showNotification('Error saving resume');
-            console.error('Error:', error);
-        }
-    });
-}
-
-// Download PDF
-if (downloadBtn) {
-    downloadBtn.addEventListener('click', async () => {
-        try {
-            // Check if template is selected
-            if (!resumeState.template) {
-                showNotification('Please select a template first');
-                templateModal.classList.add('show');
-                templateModal.classList.remove('hidden');
-                return;
-            }
-
-            const iframe = resumeState.previewIframe;
-            if (!iframe || !iframe.contentWindow) {
-                showNotification('Preview not loaded yet');
-                return;
-            }
-
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            if (!iframeDoc) {
-                showNotification('Cannot access preview content');
-                return;
-            }
-
-            // Show loading state
-            downloadBtn.disabled = true;
-            downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
-
-            showNotification('Generating PDF...');
-
-            // Get the resume container from iframe
-            const resumeContainer = iframeDoc.querySelector('.resume-container') || iframeDoc.body;
-
-            // Use html2canvas to capture the preview with high quality
-            const canvas = await html2canvas(resumeContainer, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff',
-                windowWidth: 850
-            });
-
-            // Calculate PDF dimensions
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'letter'
-            });
-
-            const imgWidth = 210; // A4 width in mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, '', 'FAST');
-
-            // Download PDF
-            const fullName = resumeState.personal_details.fullName || 'AI_Generated_Resume';
-            const filename = fullName.replace(/[^a-zA-Z0-9_\-\.]/g, '_') + '_Resume.pdf';
-            pdf.save(filename);
-
-            // Reset button
-            downloadBtn.disabled = false;
-            downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download PDF';
-
-            showNotification('PDF downloaded successfully!');
-        } catch (error) {
-            downloadBtn.disabled = false;
-            downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download PDF';
-            console.error('Error downloading PDF:', error);
-            showNotification('Error downloading PDF');
-        }
-    });
-}
-
-console.log('AI Editor loaded');

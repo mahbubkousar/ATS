@@ -3,11 +3,51 @@ require_once 'config/session.php';
 require_once 'config/database.php';
 requireLogin();
 
+$user = getCurrentUser();
 $conn = getDBConnection();
 
-// Fetch all active templates from database
-$templatesQuery = "SELECT template_name, template_display_name, template_category FROM templates WHERE is_active = 1 ORDER BY template_id";
-$templatesResult = $conn->query($templatesQuery);
+// Get resume ID or template from URL
+$resumeId = $_GET['id'] ?? null;
+$templateName = $_GET['template'] ?? null;
+
+// Load existing resume data if editing
+$resumeData = null;
+if ($resumeId) {
+    $stmt = $conn->prepare("SELECT * FROM resumes WHERE resume_id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $resumeId, $user['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $resumeData = $result->fetch_assoc();
+        $templateName = $resumeData['template_name'];
+    }
+    $stmt->close();
+}
+
+// Get user data for new resume
+$personalDetails = [];
+if (!$resumeData) {
+    $stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
+    if ($stmt) {
+        $stmt->bind_param("i", $user['id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $userData = $result->fetch_assoc();
+            $personalDetails = [
+                'fullName' => $userData['full_name'] ?? '',
+                'email' => $userData['email'] ?? '',
+                'phone' => $userData['phone'] ?? '',
+                'location' => ($userData['city'] ?? '') . ($userData['state'] ? ', ' . $userData['state'] : ''),
+                'professionalTitle' => $userData['professional_title'] ?? '',
+                'linkedin' => ''
+            ];
+        }
+        $stmt->close();
+    }
+} else {
+    $personalDetails = json_decode($resumeData['personal_details'], true) ?? [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,89 +60,55 @@ $templatesResult = $conn->query($templatesQuery);
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css?v=9">
-    <link rel="stylesheet" href="css/ai-editor.css?v=3">
+    <link rel="stylesheet" href="css/editor.css?v=16">
+    <link rel="stylesheet" href="css/ai-editor.css?v=2">
 </head>
 <body class="ai-editor-body">
     <nav class="floating-nav">
         <div class="nav-content">
-            <a href="index.html" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
+            <a href="index.php" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
             <div class="nav-links">
                 <a href="dashboard.php" class="nav-link">Dashboard</a>
                 <a href="score-checker.php" class="nav-link">ATS Checker</a>
-                <a href="about.html" class="nav-link">About</a>
-                <button class="nav-cta" id="saveResumeBtn">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Resume
-                </button>
-                <button class="nav-cta download-btn" id="downloadBtn">
-                    <i class="fa-solid fa-download"></i> Download PDF
-                </button>
+                <a href="ats-converter.php" class="nav-link">ATS Converter</a>
+                <button class="nav-cta" id="saveResumeBtn">Save Resume</button>
+                <button class="nav-cta download-btn" id="downloadBtn">Print / Download PDF</button>
             </div>
         </div>
     </nav>
 
     <!-- Template Selection Modal -->
-    <div class="template-modal" id="templateModal">
-        <div class="template-modal-content">
-            <div class="template-modal-header">
+    <div class="template-selection-modal" id="templateSelectionModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
                 <h2>Choose Your Resume Template</h2>
-                <p>Select a template that best fits your professional background</p>
+                <p>Select a template for your AI-powered resume. You won't be able to change it later.</p>
             </div>
-
-            <div class="template-categories">
-                <button class="category-btn active" data-category="all">All Templates</button>
-                <button class="category-btn" data-category="professional">Professional</button>
-                <button class="category-btn" data-category="academic">Academic</button>
-            </div>
-
-            <div class="template-grid" id="templateGrid">
+            <div class="template-grid">
                 <?php
-                if ($templatesResult && $templatesResult->num_rows > 0) {
-                    while ($template = $templatesResult->fetch_assoc()) {
-                        $templateName = htmlspecialchars($template['template_name']);
-                        $displayName = htmlspecialchars($template['template_display_name']);
-                        $category = htmlspecialchars($template['template_category'] ?? 'professional');
+                // Show basic templates for AI editor
+                $aiTemplates = [
+                    ['name' => 'modern', 'display' => 'Modern', 'category' => 'professional'],
+                    ['name' => 'professional', 'display' => 'Professional', 'category' => 'professional'],
+                    ['name' => 'academic-standard', 'display' => 'Academic Standard', 'category' => 'academic']
+                ];
 
-                        // Determine badge text and icon
-                        $badgeText = '';
-                        $badgeIcon = '';
-                        if ($category === 'academic') {
-                            $badgeText = 'Academic';
-                            $badgeIcon = 'fa-graduation-cap';
-                        } elseif (in_array($templateName, ['technical', 'creative', 'executive'])) {
-                            $badgeText = ucfirst($templateName);
-                            $badgeIcon = $templateName === 'technical' ? 'fa-code' : ($templateName === 'creative' ? 'fa-palette' : 'fa-crown');
-                        }
+                foreach ($aiTemplates as $template) {
+                    $tName = htmlspecialchars($template['name']);
+                    $tDisplay = htmlspecialchars($template['display']);
+                    $tCategory = htmlspecialchars($template['category']);
 
-                        echo '<div class="template-card" data-template="' . $templateName . '" data-category="' . $category . '">';
-                        echo '  <div class="template-preview">';
-                        echo '    <iframe src="templates/preview-handler.php?template=' . $templateName . '&mode=thumbnail&v=3" loading="lazy"></iframe>';
-                        echo '  </div>';
-                        echo '  <div class="template-info">';
-                        echo '    <h3>' . $displayName . '</h3>';
-                        if ($badgeText) {
-                            echo '    <span class="template-badge"><i class="fa-solid ' . $badgeIcon . '"></i> ' . $badgeText . '</span>';
-                        }
-                        echo '  </div>';
-                        echo '  <button class="select-template-btn" data-template="' . $templateName . '">Select Template</button>';
-                        echo '</div>';
-                    }
-                } else {
-                    // Fallback templates if database query fails
-                    echo '<div class="template-card" data-template="classic" data-category="professional">
-                            <div class="template-preview"><iframe src="templates/preview-handler.php?template=classic&mode=thumbnail&v=3" loading="lazy"></iframe></div>
-                            <div class="template-info"><h3>Classic</h3></div>
-                            <button class="select-template-btn" data-template="classic">Select Template</button>
-                          </div>';
-                    echo '<div class="template-card" data-template="modern" data-category="professional">
-                            <div class="template-preview"><iframe src="templates/preview-handler.php?template=modern&mode=thumbnail&v=3" loading="lazy"></iframe></div>
-                            <div class="template-info"><h3>Modern</h3></div>
-                            <button class="select-template-btn" data-template="modern">Select Template</button>
-                          </div>';
-                    echo '<div class="template-card" data-template="professional" data-category="professional">
-                            <div class="template-preview"><iframe src="templates/preview-handler.php?template=professional&mode=thumbnail&v=3" loading="lazy"></iframe></div>
-                            <div class="template-info"><h3>Professional</h3></div>
-                            <button class="select-template-btn" data-template="professional">Select Template</button>
-                          </div>';
+                    echo '<div class="template-card" data-template="' . $tName . '" data-category="' . $tCategory . '">';
+                    echo '  <div class="template-preview-thumb">';
+                    echo '    <iframe src="templates/' . $tName . '.html?v=3" loading="lazy"></iframe>';
+                    echo '  </div>';
+                    echo '  <div class="template-info">';
+                    echo '    <h3>' . $tDisplay . '</h3>';
+                    echo '    <span class="template-category-badge">' . ucfirst($tCategory) . '</span>';
+                    echo '  </div>';
+                    echo '  <button class="select-template-btn" data-template="' . $tName . '">Select This Template</button>';
+                    echo '</div>';
                 }
                 ?>
             </div>
@@ -114,16 +120,21 @@ $templatesResult = $conn->query($templatesQuery);
         <aside class="chat-panel">
             <div class="chat-header">
                 <div class="chat-header-content">
-                    <i class="fa-solid fa-robot"></i>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <div>
                         <h2>AI Resume Assistant</h2>
                         <p>Chat to build your resume</p>
                     </div>
                 </div>
-                <button class="new-chat-btn" id="newChatBtn">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>New Chat</span>
+                <button class="new-chat-btn" id="newChatBtn" title="Start over with new resume">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Reset</span>
                 </button>
+            </div>
+
+            <div class="template-indicator" id="templateIndicator" style="display: none;">
+                <i class="fa-solid fa-file-lines"></i>
+                <span id="templateNameDisplay">Loading...</span>
             </div>
 
             <div class="chat-messages" id="chatMessages">
@@ -132,80 +143,8 @@ $templatesResult = $conn->query($templatesQuery);
                         <i class="fa-solid fa-robot"></i>
                     </div>
                     <div class="message-content">
-                        <p>Hi! I'm your AI resume assistant. I'll help you build an ATS-optimized resume through conversation.</p>
-                        <p>Let's start with some basics. What's your full name and the job title you're targeting?</p>
-                    </div>
-                </div>
-
-                <div class="message user-message">
-                    <div class="message-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>Hi! I'm Mahbubur Rahman Khan and I'm targeting a Senior Software Engineer position.</p>
-                    </div>
-                </div>
-
-                <div class="message assistant-message">
-                    <div class="message-avatar">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>Great to meet you, Mahbubur! I've added your name to the resume. Now, could you tell me about your most recent work experience? Please include your job title, company name, dates, and key responsibilities or achievements.</p>
-                    </div>
-                </div>
-
-                <div class="message user-message">
-                    <div class="message-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>I've been working as a Software Engineer at Brain Station 23 from 2021 to present. I led the development of a microservices architecture that improved system performance by 40%, mentored 5 junior developers, and implemented CI/CD pipelines using Jenkins and Docker.</p>
-                    </div>
-                </div>
-
-                <div class="message assistant-message">
-                    <div class="message-avatar">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>Excellent experience! I've added that to your resume. Would you like to add more work experience, or should we move on to your education background?</p>
-                    </div>
-                </div>
-
-                <div class="message user-message">
-                    <div class="message-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>I have a Bachelor of Science in Computer Science and Engineering from North South University, graduated in 2020.</p>
-                    </div>
-                </div>
-
-                <div class="message assistant-message">
-                    <div class="message-avatar">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>Perfect! I've added your education. Now, what are your key technical skills? Please list skills relevant to the Senior Software Engineer position.</p>
-                    </div>
-                </div>
-
-                <div class="message user-message">
-                    <div class="message-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>JavaScript, TypeScript, React, Node.js, Python, AWS, Docker, Kubernetes, PostgreSQL, MongoDB, CI/CD, Microservices Architecture, Agile/Scrum</p>
-                    </div>
-                </div>
-
-                <div class="message assistant-message">
-                    <div class="message-avatar">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>Great skills! I've added them to your resume. Your resume is looking solid! You can continue adding more details, or use the download button to export your resume.</p>
+                        <p>Hi! I'm your AI resume assistant powered by Google Gemini. I'll help you build an ATS-optimized resume through conversation.</p>
+                        <p>Let's start with some basics. <strong>What's your full name and the job title you're targeting?</strong></p>
                     </div>
                 </div>
             </div>
@@ -254,65 +193,59 @@ $templatesResult = $conn->query($templatesQuery);
                     <button class="preview-action-btn" id="zoomInBtn" title="Zoom In">
                         <i class="fa-solid fa-plus"></i>
                     </button>
-                    <button class="preview-action-btn" id="refreshBtn" title="Refresh">
+                    <button class="preview-action-btn" id="refreshBtn" title="Refresh Preview">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
             </div>
 
             <div class="preview-content" id="previewContent">
-                <div class="resume-preview" id="resumePreview">
-                    <div class="resume-content">
-                        <h1>Mahbubur Rahman Khan</h1>
-                        <p><strong>Senior Software Engineer</strong></p>
-                        <p style="color: var(--text-light); font-size: 0.9rem;">mahbubur.khan@email.com | +880 1712-345678 | Dhaka, Bangladesh</p>
-                        <hr style="border: 1px solid var(--border-color); margin: 1.5rem 0;">
-
-                        <h2>Experience</h2>
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3>Software Engineer - Brain Station 23</h3>
-                            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">2021 - Present</p>
-                            <ul>
-                                <li>Led the development of a microservices architecture that improved system performance by 40%</li>
-                                <li>Mentored 5 junior developers on best practices and code review processes</li>
-                                <li>Implemented CI/CD pipelines using Jenkins and Docker, reducing deployment time by 60%</li>
-                                <li>Collaborated with cross-functional teams to deliver features on time and within budget</li>
-                            </ul>
-                        </div>
-
-                        <h2>Education</h2>
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3>Bachelor of Science in Computer Science and Engineering</h3>
-                            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">North South University - 2020</p>
-                            <p>Relevant coursework: Data Structures, Algorithms, Software Engineering, Database Systems, Machine Learning</p>
-                        </div>
-
-                        <h2>Skills</h2>
-                        <ul style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
-                            <li>JavaScript</li>
-                            <li>TypeScript</li>
-                            <li>React</li>
-                            <li>Node.js</li>
-                            <li>Python</li>
-                            <li>AWS</li>
-                            <li>Docker</li>
-                            <li>Kubernetes</li>
-                            <li>PostgreSQL</li>
-                            <li>MongoDB</li>
-                            <li>CI/CD</li>
-                            <li>Microservices Architecture</li>
-                            <li>Agile/Scrum</li>
-                        </ul>
-                    </div>
+                <div class="resume-paper">
+                    <iframe id="resumePreview"></iframe>
                 </div>
             </div>
         </section>
     </div>
 
-    <script src="js/app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="js/ai-editor-config.js?v=1"></script>
-    <script src="js/ai-editor.js?v=10"></script>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 ResumeSync. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Notification Modal -->
+    <div class="modal-overlay" id="notificationModal" style="display: none;">
+        <div class="notification-modal" id="notificationModalContent">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 id="notificationTitle">Success</h3>
+            <p id="notificationMessage">Operation completed successfully</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" id="notificationOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pass resume data to JavaScript
+        const resumeData = <?php echo json_encode([
+            'id' => $resumeId,
+            'resume_title' => $resumeData['resume_title'] ?? '',
+            'template_name' => $templateName,
+            'personal_details' => $personalDetails,
+            'summary_text' => $resumeData['summary_text'] ?? '',
+            'status' => $resumeData['status'] ?? 'draft',
+            'experience' => $resumeData['experience'] ?? null,
+            'education' => $resumeData['education'] ?? null,
+            'skills' => $resumeData['skills'] ?? null
+        ]); ?>;
+
+        const userId = <?php echo $user['id']; ?>;
+    </script>
+    <script src="config/gemini-config.php"></script>
+    <script src="js/navigation-fix.js"></script>
+    <script src="js/modal-utils.js?v=5"></script>
+    <script src="js/ai-editor.js?v=3"></script>
 </body>
 </html>

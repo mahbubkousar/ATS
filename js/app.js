@@ -103,7 +103,15 @@ function handleStartBuilding() {
 }
 
 // Custom notification function
-function showNotification(message) {
+// Will use modal-based notifications if available, otherwise falls back to toast
+function showNotification(message, type = 'info') {
+    // If modal-utils.js is loaded, use modal notifications
+    if (typeof showNotificationModal === 'function') {
+        showNotificationModal(message, type);
+        return;
+    }
+
+    // Fallback to toast notification
     const notification = document.createElement('div');
     notification.textContent = message;
     notification.style.cssText = `

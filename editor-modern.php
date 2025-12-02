@@ -55,19 +55,19 @@ if (!$resumeData) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css?v=4">
-    <link rel="stylesheet" href="css/editor.css?v=9">
+    <link rel="stylesheet" href="css/editor.css?v=13">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="editor-body">
     <nav class="floating-nav">
         <div class="nav-content">
-            <a href="index.html" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
+            <a href="index.php" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
             <div class="nav-links">
                 <a href="dashboard.php" class="nav-link">Dashboard</a>
                 <a href="score-checker.php" class="nav-link">ATS Checker</a>
-                <a href="about.html" class="nav-link">About</a>
+                <a href="ats-converter.php" class="nav-link">ATS Converter</a>
                 <button class="nav-cta" id="saveResumeBtn">Save Resume</button>
-                <button class="nav-cta download-btn" id="downloadBtn">Download PDF</button>
+                <button class="nav-cta download-btn" id="downloadBtn">Print / Download PDF</button>
             </div>
         </div>
     </nav>
@@ -130,8 +130,10 @@ if (!$resumeData) {
 
             <div class="form-section">
                 <h3 class="form-section-title"><i class="fa-solid fa-star"></i> Skills</h3>
-                <textarea class="form-textarea" id="skills" placeholder="Enter your skills, separated by commas" rows="4"></textarea>
-                <small class="form-hint">Separate skills with commas</small>
+                <div id="skillsContainer"></div>
+                <button class="add-item-btn" id="addSkillCategoryBtn">
+                    <i class="fa-solid fa-plus"></i> Add Skill Category
+                </button>
             </div>
 
             <!-- Certifications (Optional) -->
@@ -229,6 +231,60 @@ if (!$resumeData) {
         </div>
     </footer>
 
+<!-- MODALS -->
+    <!-- Notification Modal -->
+    <div class="modal-overlay" id="notificationModal" style="display: none;">
+        <div class="notification-modal" id="notificationModalContent">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 id="notificationTitle">Success</h3>
+            <p id="notificationMessage">Operation completed successfully</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" id="notificationOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Progress Modal -->
+    <div class="modal-overlay" id="analysisProgressModal" style="display: none;">
+        <div class="progress-modal">
+            <div class="progress-icon">
+                <i class="fas fa-wand-magic-sparkles fa-spin"></i>
+            </div>
+            <h3 class="progress-title">Analyzing Your Resume</h3>
+            <p class="progress-stage" id="progressStage">Initializing analysis...</p>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+            <div class="progress-percentage" id="progressPercentage">0%</div>
+
+            <div class="progress-steps">
+                <div class="progress-step" id="step1">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Extracting Text</span>
+                </div>
+                <div class="progress-step" id="step2">
+                    <i class="fas fa-align-left"></i>
+                    <span>Analyzing Format</span>
+                </div>
+                <div class="progress-step" id="step3">
+                    <i class="fas fa-key"></i>
+                    <span>Checking Keywords</span>
+                </div>
+                <div class="progress-step" id="step4">
+                    <i class="fas fa-list-check"></i>
+                    <span>Evaluating Structure</span>
+                </div>
+                <div class="progress-step" id="step5">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Generating Insights</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const resumeData = <?php echo json_encode([
             'id' => $resumeId,
@@ -242,9 +298,9 @@ if (!$resumeData) {
             'skills' => $resumeData['skills'] ?? null
         ]); ?>;
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/navigation-fix.js"></script>
+    <script src="js/modal-utils.js?v=3"></script>
     <script src="js/app.js?v=5"></script>
-    <script src="js/editor-modern.js?v=2"></script>
+    <script src="js/editor-modern.js?v=10"></script>
 </body>
 </html>

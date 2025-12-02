@@ -12,10 +12,44 @@
             color: #1a1a1a;
             background: white;
         }
+        /* Print and page break styles */
+        @page {
+            size: A4;
+            margin: 0.75in 1in;
+        }
+
+        @media print {
+            html, body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+                overflow: visible;
+            }
+
+            .resume-container {
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+            }
+
+            /* Force page breaks */
+            .page-break {
+                page-break-before: always;
+                break-before: page;
+            }
+
+            /* Prevent orphans and widows */
+            p, li, .entry-description {
+                orphans: 3;
+                widows: 3;
+            }
+        }
+
         .resume-container {
             max-width: 850px;
             margin: 0 auto;
-            padding: 40px;
+            padding: 0.75in 40px;
             background: white;
         }
         .header {
@@ -59,6 +93,7 @@
         }
         .section {
             margin-bottom: 26px;
+            page-break-inside: auto;
         }
         .section-title {
             font-size: 17px;
@@ -68,6 +103,8 @@
             padding-bottom: 6px;
             border-bottom: 2px solid #6c757d;
             font-family: 'Arial', sans-serif;
+            page-break-after: avoid;
+            page-break-inside: avoid;
         }
         .summary {
             font-size: 14px;
@@ -115,6 +152,7 @@
         }
         .entry-description li {
             margin-bottom: 5px;
+            page-break-inside: avoid;
         }
         .skills-section {
             font-size: 14px;
@@ -213,6 +251,31 @@
                     <span class="skill-label">Business Skills:</span>
                     <span class="skill-items">Strategic Planning, Risk Management, Forecasting, Due Diligence</span>
                 </div>
+            </div>
+        </div>
+
+        <div class="section" data-section="certifications" style="display:none;">
+            <div class="section-title">CERTIFICATIONS & LICENSES</div>
+            <div data-field="certifications-list">
+                <div class="entry">
+                    <div class="entry-header">
+                        <div class="entry-title-line">
+                            <div class="entry-title">Certified Financial Analyst (CFA)</div>
+                            <div class="entry-date">2021</div>
+                        </div>
+                        <div class="entry-company">CFA Institute</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" data-section="affiliations" style="display:none;">
+            <div class="section-title">PROFESSIONAL AFFILIATIONS</div>
+            <div class="entry-description" data-field="affiliations">
+                <ul>
+                    <li>Member, American Finance Association</li>
+                    <li>Member, CFA Institute</li>
+                </ul>
             </div>
         </div>
     </div>

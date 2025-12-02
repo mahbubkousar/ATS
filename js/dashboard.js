@@ -40,6 +40,7 @@ sidebarLinks.forEach(link => {
 // Resume card actions
 const downloadButtons = document.querySelectorAll('.btn-download');
 const shareButtons = document.querySelectorAll('.btn-share');
+const deleteButtons = document.querySelectorAll('.btn-delete');
 
 downloadButtons.forEach((btn) => {
     btn.addEventListener('click', async (e) => {
@@ -61,26 +62,135 @@ shareButtons.forEach((btn) => {
         const resumeId = e.target.closest('.btn-share-resume')?.dataset.resumeId;
 
         if (resumeId) {
-            currentResumeId = resumeId;
+            console.log('Share button clicked for resume ID:', resumeId);
             openShareModal(resumeId);
         } else {
+            console.error('Share button clicked but no resume ID found');
             showNotification('Share feature coming soon!');
         }
     });
 });
+
+// Delete button functionality
+deleteButtons.forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+        e.preventDefault(); // Prevent any default behavior
+
+        const button = e.target.closest('.btn-delete-resume');
+
+        if (!button) {
+            console.log('Delete button not found');
+            return;
+        }
+
+        const resumeId = button.dataset.resumeId;
+        const resumeTitle = button.dataset.resumeTitle;
+
+        console.log('Delete clicked:', { resumeId, resumeTitle });
+
+        if (resumeId) {
+            // Show confirmation dialog
+            const confirmed = await showConfirmationModal(
+                `Are you sure you want to delete "${resumeTitle}"?\n\nThis action cannot be undone.`,
+                'Delete Resume'
+            );
+
+            console.log('User confirmed:', confirmed);
+
+            if (confirmed) {
+                await deleteResume(resumeId, button);
+            }
+        }
+    });
+});
+
+// Delete resume function
+async function deleteResume(resumeId, button) {
+    try {
+        // Disable button and show loading state
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+        const response = await fetch('/ATS/api/delete-resume.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ resume_id: resumeId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification(`Resume "${result.resume_title}" deleted successfully!`, 'success');
+
+            // Remove the resume card from the DOM with animation
+            const resumeCard = button.closest('.resume-card');
+            if (resumeCard) {
+                resumeCard.style.opacity = '0';
+                resumeCard.style.transform = 'scale(0.9)';
+                resumeCard.style.transition = 'all 0.3s ease';
+
+                setTimeout(() => {
+                    resumeCard.remove();
+
+                    // Check if there are no more resumes and show empty state
+                    const remainingCards = document.querySelectorAll('.resume-card');
+                    if (remainingCards.length === 0) {
+                        location.reload(); // Reload to show empty state
+                    }
+                }, 300);
+            }
+        } else {
+            showNotification('Error: ' + result.message, 'error');
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-trash"></i> Delete';
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        showNotification('Failed to delete resume. Please try again.', 'error');
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-trash"></i> Delete';
+    }
+}
 
 // Share functionality
 let currentResumeId = null;
 let currentShareUrl = null;
 
 async function openShareModal(resumeId) {
+    console.log('=== Opening Share Modal ===');
+    console.log('Resume ID received:', resumeId);
+
+    // Update current resume ID FIRST before any UI changes
     currentResumeId = resumeId;
+    currentShareUrl = null;
+
+    console.log('Current resume ID set to:', currentResumeId);
+
+    // Reset modal state before showing
+    document.getElementById('shareLink').value = '';
+    document.getElementById('viewCount').textContent = '0';
+    document.getElementById('downloadCount').textContent = '0';
+    document.getElementById('statusBadge').textContent = 'Private';
+    document.getElementById('shareContent').style.display = 'block';
+    document.getElementById('shareLinkSection').style.display = 'none';
+
+    // Now show the modal
     document.getElementById('shareModal').style.display = 'flex';
 
     // Check if resume already has a share link
     try {
+        console.log('Fetching share stats for resume ID:', resumeId);
         const response = await fetch(`/ATS/api/get-share-stats.php?resume_id=${resumeId}`);
         const result = await response.json();
+        console.log('Share stats response:', result);
+
+        // Verify we're still on the same resume (in case user clicked another one)
+        if (currentResumeId !== resumeId) {
+            console.log('Resume ID changed while loading, ignoring stale response');
+            return;
+        }
 
         if (result.success && result.has_link) {
             // Show existing link and stats
@@ -121,7 +231,13 @@ function closeShareModal() {
 
 // Generate share link
 document.getElementById('generateLinkBtn')?.addEventListener('click', async () => {
-    if (!currentResumeId) return;
+    if (!currentResumeId) {
+        console.error('No resume ID set for share link generation');
+        showNotification('Error: No resume selected');
+        return;
+    }
+
+    const resumeIdToGenerate = currentResumeId; // Capture the ID at button click time
 
     try {
         const response = await fetch('/ATS/api/generate-share-link.php', {
@@ -129,10 +245,16 @@ document.getElementById('generateLinkBtn')?.addEventListener('click', async () =
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ resume_id: currentResumeId })
+            body: JSON.stringify({ resume_id: resumeIdToGenerate })
         });
 
         const result = await response.json();
+
+        // Verify we're still on the same resume
+        if (currentResumeId !== resumeIdToGenerate) {
+            console.log('Resume ID changed while generating link, ignoring stale response');
+            return;
+        }
 
         if (result.success) {
             currentShareUrl = result.share_url;
@@ -158,7 +280,7 @@ document.getElementById('generateLinkBtn')?.addEventListener('click', async () =
                 showNotification('Existing share link loaded!');
             }
         } else {
-            showNotification('Failed to generate share link');
+            showNotification('Failed to generate share link: ' + (result.message || 'Unknown error'));
         }
     } catch (error) {
         console.error('Error generating share link:', error);
@@ -176,7 +298,13 @@ document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
 
 // Toggle public/private
 document.getElementById('togglePublicBtn')?.addEventListener('click', async () => {
-    if (!currentResumeId) return;
+    if (!currentResumeId) {
+        console.error('No resume ID set for toggle');
+        showNotification('Error: No resume selected');
+        return;
+    }
+
+    const resumeIdToToggle = currentResumeId; // Capture the ID at button click time
 
     try {
         const response = await fetch('/ATS/api/toggle-resume-public.php', {
@@ -184,10 +312,16 @@ document.getElementById('togglePublicBtn')?.addEventListener('click', async () =
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ resume_id: currentResumeId })
+            body: JSON.stringify({ resume_id: resumeIdToToggle })
         });
 
         const result = await response.json();
+
+        // Verify we're still on the same resume
+        if (currentResumeId !== resumeIdToToggle) {
+            console.log('Resume ID changed while toggling, ignoring stale response');
+            return;
+        }
 
         if (result.success) {
             const toggleBtn = document.getElementById('togglePublicBtn');
@@ -228,7 +362,7 @@ if (navCtaBtn) {
     createResumeBtn.addEventListener('click', () => {
         showNotification('Opening resume builder...');
         setTimeout(() => {
-            window.location.href = 'editor.html';
+            window.location.href = 'editor.php';
         }, 500);
     });
 }
@@ -352,7 +486,7 @@ templateButtons.forEach(btn => {
         const templateName = this.closest('.template-card').querySelector('.template-name').textContent;
         showNotification(`Opening ${templateName} template...`);
         setTimeout(() => {
-            window.location.href = 'editor.html';
+            window.location.href = 'editor.php';
         }, 500);
     });
 });
@@ -395,11 +529,15 @@ settingActionBtns.forEach(btn => {
 // Delete account button
 const deleteBtns = document.querySelectorAll('.btn-danger');
 deleteBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', async function() {
         const resumeCard = this.closest('.resume-card');
         if (resumeCard) {
             const resumeTitle = resumeCard.querySelector('.resume-title').textContent;
-            if (confirm(`Are you sure you want to delete "${resumeTitle}"?`)) {
+            const confirmed = await showConfirmationModal(
+                `Are you sure you want to delete "${resumeTitle}"?`,
+                'Delete Resume'
+            );
+            if (confirmed) {
                 resumeCard.style.animation = 'fadeOut 0.3s ease';
                 setTimeout(() => {
                     resumeCard.remove();
@@ -408,7 +546,11 @@ deleteBtns.forEach(btn => {
             }
         } else {
             // Account deletion
-            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            const confirmed = await showConfirmationModal(
+                'Are you sure you want to delete your account? This action cannot be undone.',
+                'Delete Account'
+            );
+            if (confirmed) {
                 showNotification('Account deletion initiated. Please check your email.');
             }
         }
@@ -554,8 +696,12 @@ function editEducation(index) {
 }
 
 // Delete education
-function deleteEducation(index) {
-    if (confirm('Are you sure you want to delete this education entry?')) {
+async function deleteEducation(index) {
+    const confirmed = await showConfirmationModal(
+        'Are you sure you want to delete this education entry?',
+        'Delete Education'
+    );
+    if (confirmed) {
         const data = JSON.parse(localStorage.getItem('registrationData') || '{}');
         data.education.splice(index, 1);
         localStorage.setItem('registrationData', JSON.stringify(data));
@@ -570,8 +716,12 @@ function editExperience(index) {
 }
 
 // Delete experience
-function deleteExperience(index) {
-    if (confirm('Are you sure you want to delete this experience entry?')) {
+async function deleteExperience(index) {
+    const confirmed = await showConfirmationModal(
+        'Are you sure you want to delete this experience entry?',
+        'Delete Experience'
+    );
+    if (confirmed) {
         const data = JSON.parse(localStorage.getItem('registrationData') || '{}');
         data.experience.splice(index, 1);
         localStorage.setItem('registrationData', JSON.stringify(data));

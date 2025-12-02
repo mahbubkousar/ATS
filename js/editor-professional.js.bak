@@ -1,17 +1,17 @@
-// Technical Template Editor JavaScript
-// This is a dedicated editor for the Technical resume template
+// Professional Template Editor JavaScript
+// This is a dedicated editor for the Professional resume template
 
 let resumeState = {
     id: resumeData.id,
     resume_title: resumeData.resume_title,
-    template_name: 'technical',
+    template_name: 'professional',
     personal_details: resumeData.personal_details || {},
     summary_text: resumeData.summary_text || '',
     experience: [],
     education: [],
     skills: [],
-    projects: [],
-    certifications: []
+    certifications: [],
+    affiliations: ''
 };
 
 let previewIframe = null;
@@ -21,7 +21,7 @@ let isTemplateLoading = false;
 document.addEventListener('DOMContentLoaded', function() {
     previewIframe = document.getElementById('resumePreview');
 
-    // Load the technical template
+    // Load the professional template
     loadTemplatePreview();
 
     // Set up event listeners for all form fields
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function loadTemplatePreview() {
     isTemplateLoading = true;
     const timestamp = new Date().getTime();
-    previewIframe.src = `/ATS/templates/technical.html?v=${timestamp}`;
+    previewIframe.src = `/ATS/templates/professional.html?v=${timestamp}`;
 
     previewIframe.onload = () => {
         setTimeout(() => {
@@ -77,32 +77,58 @@ function setupEventListeners() {
         }, 300));
     }
 
-    // Skills - parse categorized format
+    // Skills - Professional template uses categorized skills
     const skillsElement = document.getElementById('skills');
     if (skillsElement) {
         skillsElement.addEventListener('input', debounce(() => {
-            console.log('Skills input changed:', skillsElement.value);
-            resumeState.skills = parseSkillsText(skillsElement.value);
-            console.log('Parsed skills:', resumeState.skills);
+            resumeState.skills = parseSkillCategories(skillsElement.value);
             updatePreview();
         }, 300));
     }
 
-    // Experience and Education buttons
+    // Affiliations
+    const affiliationsElement = document.getElementById('affiliations');
+    if (affiliationsElement) {
+        affiliationsElement.addEventListener('input', debounce(() => {
+            resumeState.affiliations = affiliationsElement.value;
+            updatePreview();
+        }, 300));
+    }
+
+    // Experience, Education, and Certification buttons
     document.getElementById('addExperienceBtn').addEventListener('click', addExperience);
     document.getElementById('addEducationBtn').addEventListener('click', addEducation);
+    document.getElementById('addCertificationBtn').addEventListener('click', addCertification);
+}
 
-    // Projects button
-    const addProjectBtn = document.getElementById('addProjectBtn');
-    if (addProjectBtn) {
-        addProjectBtn.addEventListener('click', addProject);
-    }
+function parseSkillCategories(skillsText) {
+    // Parse skills into categories
+    // Format: "Category: skill1, skill2\nCategory2: skill3, skill4"
+    const lines = skillsText.split('\n').map(l => l.trim()).filter(l => l);
+    const categories = [];
 
-    // Certifications button
-    const addCertificationBtn = document.getElementById('addCertificationBtn');
-    if (addCertificationBtn) {
-        addCertificationBtn.addEventListener('click', addCertification);
-    }
+    lines.forEach(line => {
+        if (line.includes(':')) {
+            const [category, items] = line.split(':').map(s => s.trim());
+            if (category && items) {
+                categories.push({
+                    category: category,
+                    items: items.split(',').map(s => s.trim()).filter(s => s)
+                });
+            }
+        } else {
+            // If no category, add as general skills
+            const items = line.split(',').map(s => s.trim()).filter(s => s);
+            if (items.length > 0) {
+                categories.push({
+                    category: 'General Skills',
+                    items: items
+                });
+            }
+        }
+    });
+
+    return categories;
 }
 
 function updatePreview() {
@@ -138,14 +164,14 @@ function updatePreview() {
     // Update education list
     updateEducationList(iframeDoc);
 
-    // Update skills
-    updateSkillsList(iframeDoc);
+    // Update skills with categories
+    updateSkillsWithCategories(iframeDoc);
 
-    // Update projects
-    updateProjectsList(iframeDoc);
-
-    // Update certifications
+    // Update certifications list
     updateCertificationsList(iframeDoc);
+
+    // Update affiliations
+    updateAffiliations(iframeDoc);
 }
 
 function updateExperienceList(iframeDoc) {
@@ -163,7 +189,7 @@ function updateExperienceList(iframeDoc) {
                     <div class="entry-title">${item.position || ''}</div>
                     <div class="entry-date">${item.startDate || ''} - ${item.endDate || ''}</div>
                 </div>
-                <div class="entry-company">${item.company || ''}, ${item.location || ''}</div>
+                <div class="entry-company">${item.company || ''}${item.location ? ', ' + item.location : ''}</div>
             </div>
         `;
 
@@ -199,7 +225,7 @@ function updateEducationList(iframeDoc) {
                     <div class="entry-title">${item.degree || ''}</div>
                     <div class="entry-date">${item.startDate || ''} - ${item.endDate || ''}</div>
                 </div>
-                <div class="entry-company">${item.institution || ''}, ${item.location || ''}</div>
+                <div class="entry-company">${item.institution || ''}${item.location ? ', ' + item.location : ''}</div>
             </div>
         `;
 
@@ -207,122 +233,87 @@ function updateEducationList(iframeDoc) {
     });
 }
 
-function parseSkillsText(text) {
-    // Parse format: "Category: skill1, skill2, skill3"
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-    const categories = [];
-
-    lines.forEach(line => {
-        if (line.includes(':')) {
-            const [category, items] = line.split(':').map(s => s.trim());
-            if (category && items) {
-                const skillItems = items.split(',').map(s => s.trim()).filter(s => s);
-                if (skillItems.length > 0) {
-                    categories.push({
-                        category: category,
-                        items: skillItems
-                    });
-                }
-            }
-        }
-    });
-
-    return categories;
-}
-
-function updateSkillsList(iframeDoc) {
-    console.log('updateSkillsList called with resumeState.skills:', resumeState.skills);
+function updateSkillsWithCategories(iframeDoc) {
     const skillsContainer = iframeDoc.querySelector('[data-field="skills"]');
-    console.log('skillsContainer found:', skillsContainer);
-
-    if (!skillsContainer) {
-        console.log('Skills container not found in iframe!');
-        return;
-    }
+    if (!skillsContainer) return;
 
     skillsContainer.innerHTML = '';
 
     if (resumeState.skills && resumeState.skills.length > 0) {
-        console.log('Building skills DOM with', resumeState.skills.length, 'categories');
-        resumeState.skills.forEach(cat => {
-            const categoryDiv = iframeDoc.createElement('div');
-            categoryDiv.className = 'skill-category';
+        resumeState.skills.forEach(category => {
+            const skillRow = iframeDoc.createElement('div');
+            skillRow.className = 'skill-row';
 
-            const categoryName = iframeDoc.createElement('div');
-            categoryName.className = 'skill-category-name';
-            categoryName.textContent = cat.category;
-            categoryDiv.appendChild(categoryName);
+            const label = iframeDoc.createElement('span');
+            label.className = 'skill-label';
+            label.textContent = category.category + ':';
 
-            const itemsContainer = iframeDoc.createElement('div');
-            itemsContainer.className = 'skill-items';
+            const items = iframeDoc.createElement('span');
+            items.className = 'skill-items';
+            items.textContent = category.items.join(', ');
 
-            cat.items.forEach(skill => {
-                const skillSpan = iframeDoc.createElement('span');
-                skillSpan.className = 'skill-item';
-                skillSpan.textContent = skill;
-                itemsContainer.appendChild(skillSpan);
-            });
-
-            categoryDiv.appendChild(itemsContainer);
-            skillsContainer.appendChild(categoryDiv);
+            skillRow.appendChild(label);
+            skillRow.appendChild(items);
+            skillsContainer.appendChild(skillRow);
         });
-        console.log('Skills DOM built successfully');
-    } else {
-        console.log('No skills to display');
     }
-}
-
-function updateProjectsList(iframeDoc) {
-    const container = iframeDoc.querySelector('[data-field="projects-list"]');
-    if (!container) return;
-
-    container.innerHTML = '';
-    resumeState.projects.forEach(item => {
-        const projectDiv = iframeDoc.createElement('div');
-        projectDiv.className = 'project-item';
-
-        let html = '';
-        if (item.name) {
-            html += `<div class="project-name">${item.name}</div>`;
-        }
-        if (item.technologies) {
-            html += `<div class="project-tech">${item.technologies}</div>`;
-        }
-        if (item.description) {
-            html += `<div class="project-description">${item.description}</div>`;
-        }
-        if (item.link) {
-            html += `<div class="project-link"><a href="${item.link}" target="_blank">${item.link}</a></div>`;
-        }
-
-        projectDiv.innerHTML = html;
-        container.appendChild(projectDiv);
-    });
 }
 
 function updateCertificationsList(iframeDoc) {
     const container = iframeDoc.querySelector('[data-field="certifications-list"]');
-    if (!container) return;
+    const section = iframeDoc.querySelector('[data-section="certifications"]');
+    if (!container || !section) return;
 
-    container.innerHTML = '';
-    resumeState.certifications.forEach(item => {
-        const certDiv = iframeDoc.createElement('div');
-        certDiv.className = 'cert-item';
+    // Show or hide section based on content
+    if (resumeState.certifications && resumeState.certifications.length > 0) {
+        section.style.display = 'block';
+        container.innerHTML = '';
 
-        let html = '';
-        if (item.name) {
-            html += `<div class="cert-name">${item.name}</div>`;
-        }
-        if (item.issuer) {
-            html += `<div class="cert-issuer">${item.issuer}</div>`;
-        }
-        if (item.date) {
-            html += `<div class="cert-date">${item.date}</div>`;
-        }
+        resumeState.certifications.forEach(item => {
+            const entry = iframeDoc.createElement('div');
+            entry.className = 'entry';
 
-        certDiv.innerHTML = html;
-        container.appendChild(certDiv);
-    });
+            entry.innerHTML = `
+                <div class="entry-header">
+                    <div class="entry-title-line">
+                        <div class="entry-title">${item.name || ''}</div>
+                        <div class="entry-date">${item.year || ''}</div>
+                    </div>
+                    ${item.issuer ? `<div class="entry-company">${item.issuer}</div>` : ''}
+                </div>
+            `;
+
+            container.appendChild(entry);
+        });
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function updateAffiliations(iframeDoc) {
+    const container = iframeDoc.querySelector('[data-field="affiliations"]');
+    const section = iframeDoc.querySelector('[data-section="affiliations"]');
+    if (!container || !section) return;
+
+    // Show or hide section based on content
+    if (resumeState.affiliations && resumeState.affiliations.trim()) {
+        section.style.display = 'block';
+
+        // Parse affiliations - each line becomes a list item
+        const lines = resumeState.affiliations.split('\n').map(l => l.trim()).filter(l => l);
+
+        if (lines.length > 0) {
+            container.innerHTML = '<ul>';
+            lines.forEach(line => {
+                // Remove bullet points if user added them
+                const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+                container.innerHTML += `<li>${cleanLine}</li>`;
+            });
+            container.innerHTML += '</ul>';
+        }
+    } else {
+        section.style.display = 'none';
+    }
 }
 
 function addExperience() {
@@ -381,8 +372,16 @@ function removeExperience(index) {
 function rebuildExperienceUI() {
     const container = document.getElementById('experienceContainer');
     container.innerHTML = '';
-    resumeState.experience.forEach((_, index) => {
+    const experiences = [...resumeState.experience];
+    resumeState.experience = [];
+    experiences.forEach((exp, idx) => {
         addExperience();
+        // Populate the fields
+        Object.keys(exp).forEach(key => {
+            const field = container.querySelector(`[data-exp-index="${idx}"][data-exp-field="${key}"]`);
+            if (field) field.value = exp[key];
+        });
+        resumeState.experience[idx] = exp;
     });
 }
 
@@ -440,8 +439,77 @@ function removeEducation(index) {
 function rebuildEducationUI() {
     const container = document.getElementById('educationContainer');
     container.innerHTML = '';
-    resumeState.education.forEach((_, index) => {
+    const educations = [...resumeState.education];
+    resumeState.education = [];
+    educations.forEach((edu, idx) => {
         addEducation();
+        // Populate the fields
+        Object.keys(edu).forEach(key => {
+            const field = container.querySelector(`[data-edu-index="${idx}"][data-edu-field="${key}"]`);
+            if (field) field.value = edu[key];
+        });
+        resumeState.education[idx] = edu;
+    });
+}
+
+function addCertification() {
+    const container = document.getElementById('certificationsContainer');
+    const index = resumeState.certifications.length;
+
+    const certificationItem = {
+        name: '',
+        issuer: '',
+        year: ''
+    };
+
+    resumeState.certifications.push(certificationItem);
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'form-item';
+    itemDiv.innerHTML = `
+        <div class="form-item-header">
+            <span>Certification ${index + 1}</span>
+            <button type="button" class="remove-item-btn" onclick="removeCertification(${index})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+        <input type="text" class="form-input" placeholder="Certification Name" data-cert-field="name" data-cert-index="${index}">
+        <input type="text" class="form-input" placeholder="Issuing Organization" data-cert-field="issuer" data-cert-index="${index}">
+        <input type="text" class="form-input" placeholder="Year" data-cert-field="year" data-cert-index="${index}">
+    `;
+
+    container.appendChild(itemDiv);
+
+    // Add event listeners to new fields
+    itemDiv.querySelectorAll('[data-cert-field]').forEach(field => {
+        field.addEventListener('input', debounce((e) => {
+            const idx = parseInt(e.target.dataset.certIndex);
+            const fieldName = e.target.dataset.certField;
+            resumeState.certifications[idx][fieldName] = e.target.value;
+            updatePreview();
+        }, 300));
+    });
+}
+
+function removeCertification(index) {
+    resumeState.certifications.splice(index, 1);
+    rebuildCertificationsUI();
+    updatePreview();
+}
+
+function rebuildCertificationsUI() {
+    const container = document.getElementById('certificationsContainer');
+    container.innerHTML = '';
+    const certifications = [...resumeState.certifications];
+    resumeState.certifications = [];
+    certifications.forEach((cert, idx) => {
+        addCertification();
+        // Populate the fields
+        Object.keys(cert).forEach(key => {
+            const field = container.querySelector(`[data-cert-index="${idx}"][data-cert-field="${key}"]`);
+            if (field) field.value = cert[key];
+        });
+        resumeState.certifications[idx] = cert;
     });
 }
 
@@ -474,32 +542,11 @@ function loadResumeData() {
             const skillsData = typeof resumeData.skills === 'string' ? JSON.parse(resumeData.skills) : resumeData.skills;
             resumeState.skills = skillsData;
 
-            // Convert skills array back to text format for textarea
-            if (Array.isArray(skillsData) && skillsData.length > 0) {
-                // Check if it's categorized format (array of objects with category and items)
-                if (skillsData[0].category && skillsData[0].items) {
-                    const skillsText = skillsData.map(cat =>
-                        `${cat.category}: ${cat.items.join(', ')}`
-                    ).join('\n');
-                    document.getElementById('skills').value = skillsText;
-                } else {
-                    // Simple array format
-                    document.getElementById('skills').value = skillsData.join(', ');
-                }
-            }
+            // Convert back to text format for the textarea
+            const skillsText = skillsData.map(cat => `${cat.category}: ${cat.items.join(', ')}`).join('\n');
+            document.getElementById('skills').value = skillsText;
         } catch (e) {
             console.error('Error loading skills:', e);
-        }
-    }
-
-    // Load projects
-    if (resumeData.projects) {
-        try {
-            const projData = typeof resumeData.projects === 'string' ? JSON.parse(resumeData.projects) : resumeData.projects;
-            resumeState.projects = projData;
-            projData.forEach(() => addProject());
-        } catch (e) {
-            console.error('Error loading projects:', e);
         }
     }
 
@@ -511,6 +558,17 @@ function loadResumeData() {
             certData.forEach(() => addCertification());
         } catch (e) {
             console.error('Error loading certifications:', e);
+        }
+    }
+
+    // Load affiliations
+    if (resumeData.affiliations) {
+        try {
+            const affData = typeof resumeData.affiliations === 'string' ? resumeData.affiliations : resumeData.affiliations;
+            resumeState.affiliations = affData;
+            document.getElementById('affiliations').value = affData;
+        } catch (e) {
+            console.error('Error loading affiliations:', e);
         }
     }
 }
@@ -527,14 +585,14 @@ async function saveResume() {
         const formData = new FormData();
         formData.append('resume_id', resumeState.id || '');
         formData.append('resume_title', resumeTitle);
-        formData.append('template_name', 'technical');
+        formData.append('template_name', 'professional');
         formData.append('personal_details', JSON.stringify(resumeState.personal_details));
         formData.append('summary_text', resumeState.summary_text);
         formData.append('experience', JSON.stringify(resumeState.experience));
         formData.append('education', JSON.stringify(resumeState.education));
         formData.append('skills', JSON.stringify(resumeState.skills));
-        formData.append('projects', JSON.stringify(resumeState.projects));
         formData.append('certifications', JSON.stringify(resumeState.certifications));
+        formData.append('affiliations', resumeState.affiliations);
         formData.append('status', 'draft');
 
         const response = await fetch('/ATS/api/save-resume.php', {
@@ -609,17 +667,14 @@ async function downloadPDF() {
 }
 
 function setupZoomControls() {
-    // Check if zoom controls exist (they don't in the new layout)
+    // Check if zoom controls exist
     const zoomInBtn = document.getElementById('zoomInBtn');
     const zoomOutBtn = document.getElementById('zoomOutBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const wrapper = document.getElementById('previewWrapper');
     const zoomDisplay = document.getElementById('zoomLevel');
 
-    // If zoom controls don't exist, skip setup
-    if (!zoomInBtn || !zoomOutBtn || !wrapper || !zoomDisplay) {
-        return;
-    }
+    if (!zoomInBtn || !zoomOutBtn || !wrapper || !zoomDisplay) return;
 
     let zoomLevel = 100;
 
@@ -646,134 +701,8 @@ function setupZoomControls() {
     }
 }
 
-// Projects functions
-function addProject() {
-    const container = document.getElementById('projectsContainer');
-    const index = resumeState.projects.length;
-
-    const projectItem = {
-        name: '',
-        description: '',
-        technologies: '',
-        link: ''
-    };
-
-    resumeState.projects.push(projectItem);
-
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'form-item';
-    itemDiv.innerHTML = `
-        <div class="form-item-header">
-            <span>Project ${index + 1}</span>
-            <button type="button" class="remove-item-btn" onclick="removeProject(${index})">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </div>
-        <input type="text" class="form-input" placeholder="Project Name" data-proj-field="name" data-proj-index="${index}">
-        <textarea class="form-textarea" placeholder="Project Description" rows="3" data-proj-field="description" data-proj-index="${index}"></textarea>
-        <input type="text" class="form-input" placeholder="Technologies Used" data-proj-field="technologies" data-proj-index="${index}">
-        <input type="text" class="form-input" placeholder="Project Link (optional)" data-proj-field="link" data-proj-index="${index}">
-    `;
-
-    container.appendChild(itemDiv);
-
-    // Add event listeners
-    itemDiv.querySelectorAll('[data-proj-field]').forEach(field => {
-        field.addEventListener('input', debounce((e) => {
-            const idx = parseInt(e.target.dataset.projIndex);
-            const fieldName = e.target.dataset.projField;
-            resumeState.projects[idx][fieldName] = e.target.value;
-            updatePreview();
-        }, 300));
-    });
-}
-
-function removeProject(index) {
-    resumeState.projects.splice(index, 1);
-    rebuildProjectsUI();
-    updatePreview();
-}
-
-function rebuildProjectsUI() {
-    const container = document.getElementById('projectsContainer');
-    container.innerHTML = '';
-    const projects = [...resumeState.projects];
-    resumeState.projects = [];
-    projects.forEach((proj, idx) => {
-        addProject();
-        Object.keys(proj).forEach(key => {
-            const field = container.querySelector(`[data-proj-index="${idx}"][data-proj-field="${key}"]`);
-            if (field) field.value = proj[key];
-        });
-        resumeState.projects[idx] = proj;
-    });
-}
-
-// Certifications functions
-function addCertification() {
-    const container = document.getElementById('certificationsContainer');
-    const index = resumeState.certifications.length;
-
-    const certItem = {
-        name: '',
-        issuer: '',
-        date: ''
-    };
-
-    resumeState.certifications.push(certItem);
-
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'form-item';
-    itemDiv.innerHTML = `
-        <div class="form-item-header">
-            <span>Certification ${index + 1}</span>
-            <button type="button" class="remove-item-btn" onclick="removeCertification(${index})">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </div>
-        <input type="text" class="form-input" placeholder="Certification Name" data-cert-field="name" data-cert-index="${index}">
-        <input type="text" class="form-input" placeholder="Issuing Organization" data-cert-field="issuer" data-cert-index="${index}">
-        <input type="text" class="form-input" placeholder="Date Obtained" data-cert-field="date" data-cert-index="${index}">
-    `;
-
-    container.appendChild(itemDiv);
-
-    // Add event listeners
-    itemDiv.querySelectorAll('[data-cert-field]').forEach(field => {
-        field.addEventListener('input', debounce((e) => {
-            const idx = parseInt(e.target.dataset.certIndex);
-            const fieldName = e.target.dataset.certField;
-            resumeState.certifications[idx][fieldName] = e.target.value;
-            updatePreview();
-        }, 300));
-    });
-}
-
-function removeCertification(index) {
-    resumeState.certifications.splice(index, 1);
-    rebuildCertificationsUI();
-    updatePreview();
-}
-
-function rebuildCertificationsUI() {
-    const container = document.getElementById('certificationsContainer');
-    container.innerHTML = '';
-    const certs = [...resumeState.certifications];
-    resumeState.certifications = [];
-    certs.forEach((cert, idx) => {
-        addCertification();
-        Object.keys(cert).forEach(key => {
-            const field = container.querySelector(`[data-cert-index="${idx}"][data-cert-field="${key}"]`);
-            if (field) field.value = cert[key];
-        });
-        resumeState.certifications[idx] = cert;
-    });
-}
-
-function showNotification(message, type = 'info') {
-    // Simple notification - you can enhance this
-    alert(message);
-}
+// Modal-based showNotification is now provided by modal-utils.js
+// This legacy function is no longer needed
 
 function debounce(func, wait) {
     let timeout;

@@ -309,6 +309,40 @@
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+.btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1.5px solid rgba(239, 68, 68, 0.2);
+    padding: 0.5rem 0.875rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.btn-delete i {
+    font-size: 0.75rem;
+}
+
+.btn-delete:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-delete:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
 .btn-create-resume {
     background: var(--accent-color);
     color: var(--white);
@@ -2765,4 +2799,149 @@
     .btn-secondary {
         width: 100%;
     }
+}
+
+/* ===================================
+   MODAL STYLES FOR NOTIFICATIONS
+   =================================== */
+
+/* Modal Overlay */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-overlay.active {
+    display: flex !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Notification & Confirmation Modal (Inside Modal Overlay) */
+.modal-overlay .notification-modal {
+    display: block !important;
+    position: relative !important;
+    background: var(--white) !important;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+    top: auto !important;
+    right: auto !important;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+.modal-overlay .notification-modal .modal-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+}
+
+.modal-overlay .notification-modal.success .modal-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.modal-overlay .notification-modal.error .modal-icon {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.modal-overlay .notification-modal.info .modal-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.modal-overlay .notification-modal.warning .modal-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.modal-overlay .notification-modal h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-dark);
+}
+
+.modal-overlay .notification-modal p {
+    font-size: 0.95rem;
+    color: var(--text-medium);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+}
+
+.modal-overlay .notification-modal .modal-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.modal-overlay .notification-modal .modal-btn {
+    padding: 0.65rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.modal-overlay .notification-modal .modal-btn-primary {
+    background: var(--accent-color);
+    color: white;
+}
+
+.modal-overlay .notification-modal .modal-btn-primary:hover {
+    background: #6d28d9;
+    transform: translateY(-1px);
+}
+
+.modal-overlay .notification-modal .modal-btn-secondary {
+    background: var(--bg-card);
+    color: var(--text-dark);
+    border: 1px solid var(--border-color);
+}
+
+.modal-overlay .notification-modal .modal-btn-secondary:hover {
+    background: var(--bg-hover);
 }

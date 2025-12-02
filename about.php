@@ -15,11 +15,11 @@
 <body>
     <nav class="floating-nav">
         <div class="nav-content">
-            <a href="index.html" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
+            <a href="index.php" class="nav-logo" style="text-decoration: none; color: inherit;">ResumeSync</a>
             <div class="nav-links">
                 <a href="dashboard.php" class="nav-link">Dashboard</a>
                 <a href="score-checker.php" class="nav-link">ATS Checker</a>
-                <a href="about.html" class="nav-link active">About</a>
+                <a href="ats-converter.php" class="nav-link">ATS Converter</a>
                 <a href="login.php" class="nav-cta" style="text-decoration: none; display: inline-block; text-align: center;">Get Started</a>
             </div>
         </div>

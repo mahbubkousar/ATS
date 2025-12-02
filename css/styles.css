@@ -39,8 +39,8 @@ body {
     position: relative;
 }
 
-/* Geometric background elements for entire page */
-body::before {
+/* Geometric background elements - Only for homepage */
+body.homepage::before {
     content: '';
     position: fixed;
     top: -50%;
@@ -55,7 +55,7 @@ body::before {
     pointer-events: none;
 }
 
-body::after {
+body.homepage::after {
     content: '';
     position: fixed;
     bottom: -30%;
@@ -68,14 +68,6 @@ body::after {
     transform: rotate(20deg);
     z-index: 0;
     pointer-events: none;
-}
-
-/* Hide background art on editor pages */
-body.editor-body::before,
-body.editor-body::after,
-body.ai-editor-body::before,
-body.ai-editor-body::after {
-    display: none;
 }
 
 html {

@@ -28,11 +28,22 @@ function callGeminiAPI($prompt, $systemInstruction = '') {
 
     $url = GEMINI_API_ENDPOINT . '?key=' . $apiKey;
 
+    error_log("Prompt length: " . strlen($prompt));
+    error_log("System instruction: " . $systemInstruction);
+
+    // Combine system instruction with prompt if provided
+    $fullPrompt = $prompt;
+    if ($systemInstruction) {
+        $fullPrompt = $systemInstruction . "\n\n" . $prompt;
+    }
+
+    error_log("Full prompt length: " . strlen($fullPrompt));
+
     $data = [
         'contents' => [
             [
                 'parts' => [
-                    ['text' => $prompt]
+                    ['text' => $fullPrompt]
                 ]
             ]
         ],
@@ -44,30 +55,52 @@ function callGeminiAPI($prompt, $systemInstruction = '') {
         ]
     ];
 
-    if ($systemInstruction) {
-        $data['systemInstruction'] = [
-            'parts' => [
-                ['text' => $systemInstruction]
-            ]
+    $jsonData = json_encode($data);
+    if ($jsonData === false) {
+        error_log("JSON encode error: " . json_last_error_msg());
+        return [
+            'success' => false,
+            'error' => 'Failed to encode request: ' . json_last_error_msg()
         ];
     }
+
+    error_log("Gemini API Request size: " . strlen($jsonData) . " bytes");
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json'
     ]);
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
 
-    if ($httpCode !== 200) {
+    error_log("Gemini API HTTP Code: " . $httpCode);
+    error_log("Gemini API Response: " . substr($response, 0, 1000));
+
+    if ($curlError) {
+        error_log("Gemini CURL Error: " . $curlError);
         return [
             'success' => false,
-            'error' => 'API request failed with status: ' . $httpCode,
+            'error' => 'CURL error: ' . $curlError,
+            'response' => $response
+        ];
+    }
+
+    if ($httpCode !== 200) {
+        $errorMsg = 'API request failed with status: ' . $httpCode;
+        $result = json_decode($response, true);
+        if (isset($result['error']['message'])) {
+            $errorMsg .= ' - ' . $result['error']['message'];
+        }
+        error_log("Gemini API Error: " . $errorMsg);
+        return [
+            'success' => false,
+            'error' => $errorMsg,
             'response' => $response
         ];
     }
@@ -81,6 +114,18 @@ function callGeminiAPI($prompt, $systemInstruction = '') {
         ];
     }
 
+    // Check for blocked or filtered content
+    if (isset($result['candidates'][0]['finishReason']) && $result['candidates'][0]['finishReason'] !== 'STOP') {
+        $reason = $result['candidates'][0]['finishReason'];
+        error_log("Gemini blocked/filtered response: " . $reason);
+        return [
+            'success' => false,
+            'error' => 'Content filtered/blocked: ' . $reason,
+            'response' => $response
+        ];
+    }
+
+    error_log("Unexpected Gemini response format: " . json_encode($result));
     return [
         'success' => false,
         'error' => 'Unexpected API response format',

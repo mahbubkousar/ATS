@@ -9,7 +9,9 @@ let resumeState = {
     summary_text: resumeData.summary_text || '',
     experience: [],
     education: [],
-    skills: []
+    skills: [], // Array of {category: string, items: string[]}
+    certifications: [],
+    languages: ''
 };
 
 let previewIframe = null;
@@ -75,18 +77,24 @@ function setupEventListeners() {
         }, 300));
     }
 
-    // Skills
-    const skillsElement = document.getElementById('skills');
-    if (skillsElement) {
-        skillsElement.addEventListener('input', debounce(() => {
-            resumeState.skills = skillsElement.value.split(',').map(s => s.trim()).filter(s => s);
+    // Languages
+    const languagesElement = document.getElementById('languages');
+    if (languagesElement) {
+        languagesElement.addEventListener('input', debounce(() => {
+            resumeState.languages = languagesElement.value;
             updatePreview();
         }, 300));
     }
 
-    // Experience and Education buttons
+    // Experience, Education, Skills, and Certifications buttons
     document.getElementById('addExperienceBtn').addEventListener('click', addExperience);
     document.getElementById('addEducationBtn').addEventListener('click', addEducation);
+    document.getElementById('addSkillCategoryBtn').addEventListener('click', addSkillCategory);
+
+    const addCertificationBtn = document.getElementById('addCertificationBtn');
+    if (addCertificationBtn) {
+        addCertificationBtn.addEventListener('click', addCertification);
+    }
 }
 
 function updatePreview() {
@@ -124,6 +132,12 @@ function updatePreview() {
 
     // Update skills
     updateSkillsList(iframeDoc);
+
+    // Update certifications
+    updateCertificationsList(iframeDoc);
+
+    // Update languages
+    updateLanguages(iframeDoc);
 }
 
 function updateExperienceList(iframeDoc) {
@@ -186,12 +200,81 @@ function updateEducationList(iframeDoc) {
 }
 
 function updateSkillsList(iframeDoc) {
-    const skillsElement = iframeDoc.querySelector('[data-field="skills"]');
-    if (!skillsElement) return;
+    const skillsContainer = iframeDoc.querySelector('[data-field="skills"]');
+    if (!skillsContainer) return;
+
+    skillsContainer.innerHTML = '';
 
     if (resumeState.skills && resumeState.skills.length > 0) {
-        skillsElement.textContent = resumeState.skills.join(' • ');
+        resumeState.skills.forEach(skillCategory => {
+            if (skillCategory.category && skillCategory.items && skillCategory.items.length > 0) {
+                const skillCard = iframeDoc.createElement('div');
+                skillCard.className = 'skill-category';
+                skillCard.innerHTML = `
+                    <div class="skill-category-title">${skillCategory.category}</div>
+                    <div class="skill-items">${skillCategory.items.join(', ')}</div>
+                `;
+                skillsContainer.appendChild(skillCard);
+            }
+        });
     }
+}
+
+function addSkillCategory() {
+    const container = document.getElementById('skillsContainer');
+    const index = resumeState.skills.length;
+
+    const skillCategoryItem = {
+        category: '',
+        items: []
+    };
+
+    resumeState.skills.push(skillCategoryItem);
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'form-item';
+    itemDiv.innerHTML = `
+        <div class="form-item-header">
+            <span>Skill Category ${index + 1}</span>
+            <button type="button" class="remove-item-btn" onclick="removeSkillCategory(${index})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+        <input type="text" class="form-input" placeholder="Category Name (e.g., Programming Languages)" data-skill-field="category" data-skill-index="${index}">
+        <textarea class="form-textarea" placeholder="Skills (comma-separated, e.g., JavaScript, Python, Java)" rows="2" data-skill-field="items" data-skill-index="${index}"></textarea>
+    `;
+
+    container.appendChild(itemDiv);
+
+    // Add event listeners to new fields
+    itemDiv.querySelectorAll('[data-skill-field]').forEach(field => {
+        field.addEventListener('input', debounce((e) => {
+            const idx = parseInt(e.target.dataset.skillIndex);
+            const fieldName = e.target.dataset.skillField;
+
+            if (fieldName === 'items') {
+                // Split comma-separated string into array
+                resumeState.skills[idx][fieldName] = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+            } else {
+                resumeState.skills[idx][fieldName] = e.target.value;
+            }
+            updatePreview();
+        }, 300));
+    });
+}
+
+function removeSkillCategory(index) {
+    resumeState.skills.splice(index, 1);
+    rebuildSkillsUI();
+    updatePreview();
+}
+
+function rebuildSkillsUI() {
+    const container = document.getElementById('skillsContainer');
+    container.innerHTML = '';
+    resumeState.skills.forEach((_, index) => {
+        addSkillCategory();
+    });
 }
 
 function addExperience() {
@@ -314,6 +397,102 @@ function rebuildEducationUI() {
     });
 }
 
+function addCertification() {
+    const container = document.getElementById('certificationsContainer');
+    const index = resumeState.certifications.length;
+
+    const certificationItem = {
+        name: '',
+        organization: '',
+        date: ''
+    };
+
+    resumeState.certifications.push(certificationItem);
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'form-item';
+    itemDiv.innerHTML = `
+        <div class="form-item-header">
+            <span>Certification ${index + 1}</span>
+            <button type="button" class="remove-item-btn" onclick="removeCertification(${index})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+        <input type="text" class="form-input" placeholder="Certification Name" data-cert-field="name" data-cert-index="${index}">
+        <input type="text" class="form-input" placeholder="Issuing Organization" data-cert-field="organization" data-cert-index="${index}">
+        <input type="text" class="form-input" placeholder="Date (e.g., 2023)" data-cert-field="date" data-cert-index="${index}">
+    `;
+
+    container.appendChild(itemDiv);
+
+    // Add event listeners to new fields
+    itemDiv.querySelectorAll('[data-cert-field]').forEach(field => {
+        field.addEventListener('input', debounce((e) => {
+            const idx = parseInt(e.target.dataset.certIndex);
+            const fieldName = e.target.dataset.certField;
+            resumeState.certifications[idx][fieldName] = e.target.value;
+            updatePreview();
+        }, 300));
+    });
+}
+
+function removeCertification(index) {
+    resumeState.certifications.splice(index, 1);
+    rebuildCertificationsUI();
+    updatePreview();
+}
+
+function rebuildCertificationsUI() {
+    const container = document.getElementById('certificationsContainer');
+    container.innerHTML = '';
+    resumeState.certifications.forEach((_, index) => {
+        addCertification();
+    });
+}
+
+function updateCertificationsList(iframeDoc) {
+    const section = iframeDoc.querySelector('[data-section="certifications"]');
+    const container = iframeDoc.querySelector('[data-field="certifications-list"]');
+
+    if (!section || !container) return;
+
+    if (resumeState.certifications && resumeState.certifications.length > 0) {
+        section.style.display = 'block';
+        container.innerHTML = '';
+
+        resumeState.certifications.forEach(cert => {
+            if (cert.name) {
+                const entry = iframeDoc.createElement('div');
+                entry.className = 'entry';
+                entry.innerHTML = `
+                    <div class="entry-header">
+                        <div class="entry-title">${cert.name || ''}</div>
+                        <div class="entry-date">${cert.date || ''}</div>
+                    </div>
+                    ${cert.organization ? `<div class="entry-company">${cert.organization}</div>` : ''}
+                `;
+                container.appendChild(entry);
+            }
+        });
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function updateLanguages(iframeDoc) {
+    const section = iframeDoc.querySelector('[data-section="languages"]');
+    const languagesElement = iframeDoc.querySelector('[data-field="languages"]');
+
+    if (!section || !languagesElement) return;
+
+    if (resumeState.languages && resumeState.languages.trim()) {
+        section.style.display = 'block';
+        languagesElement.textContent = resumeState.languages;
+    } else {
+        section.style.display = 'none';
+    }
+}
+
 function loadResumeData() {
     // Load experience
     if (resumeData.experience) {
@@ -341,11 +520,41 @@ function loadResumeData() {
     if (resumeData.skills) {
         try {
             const skillsData = typeof resumeData.skills === 'string' ? JSON.parse(resumeData.skills) : resumeData.skills;
-            resumeState.skills = skillsData;
-            document.getElementById('skills').value = skillsData.join(', ');
+
+            // Check if skills is in old format (flat array) or new format (array of objects)
+            if (Array.isArray(skillsData) && skillsData.length > 0) {
+                if (typeof skillsData[0] === 'string') {
+                    // Old format: convert to new format
+                    resumeState.skills = [{
+                        category: 'Skills',
+                        items: skillsData
+                    }];
+                } else {
+                    // New format: use as is
+                    resumeState.skills = skillsData;
+                }
+                resumeState.skills.forEach(() => addSkillCategory());
+            }
         } catch (e) {
             console.error('Error loading skills:', e);
         }
+    }
+
+    // Load certifications
+    if (resumeData.certifications) {
+        try {
+            const certsData = typeof resumeData.certifications === 'string' ? JSON.parse(resumeData.certifications) : resumeData.certifications;
+            resumeState.certifications = certsData;
+            certsData.forEach(() => addCertification());
+        } catch (e) {
+            console.error('Error loading certifications:', e);
+        }
+    }
+
+    // Load languages
+    if (resumeData.languages) {
+        resumeState.languages = typeof resumeData.languages === 'string' ? resumeData.languages : JSON.stringify(resumeData.languages);
+        document.getElementById('languages').value = resumeState.languages;
     }
 }
 
@@ -367,6 +576,8 @@ async function saveResume() {
         formData.append('experience', JSON.stringify(resumeState.experience));
         formData.append('education', JSON.stringify(resumeState.education));
         formData.append('skills', JSON.stringify(resumeState.skills));
+        formData.append('certifications', JSON.stringify(resumeState.certifications));
+        formData.append('languages', resumeState.languages);
         formData.append('status', 'draft');
 
         const response = await fetch('/ATS/api/save-resume.php', {
@@ -401,42 +612,26 @@ async function saveResume() {
 async function downloadPDF() {
     const downloadBtn = document.getElementById('downloadBtn');
     const originalText = downloadBtn.textContent;
-    downloadBtn.textContent = 'Generating...';
-    downloadBtn.disabled = true;
 
     try {
         const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
-        const { jsPDF } = window.jspdf;
+        const iframeWindow = previewIframe.contentWindow;
 
-        const canvas = await html2canvas(iframeDoc.body, {
-            scale: 2,
-            useCORS: true,
-            logging: false
-        });
+        // Open browser's native print dialog
+        // This uses the browser's PDF engine which provides:
+        // - Perfect text rendering (vector-based, searchable)
+        // - Intelligent page breaking based on CSS @page rules
+        // - Professional quality output
+        iframeWindow.print();
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
+        // Note: Browser print dialog lets users:
+        // - Choose "Save as PDF" destination
+        // - Adjust page settings if needed
+        // - Preview before saving
 
-        const imgWidth = 210;
-        const pageHeight = 297;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-
-        const fileName = (document.getElementById('resumeTitle').value || 'resume') + '.pdf';
-        pdf.save(fileName);
-
-        showNotification('PDF downloaded successfully!', 'success');
     } catch (error) {
-        console.error('Download error:', error);
-        showNotification('Error generating PDF. Please try again.', 'error');
-    } finally {
-        downloadBtn.textContent = originalText;
-        downloadBtn.disabled = false;
+        console.error('Print error:', error);
+        showNotificationModal('Error opening print dialog. Please try again.', 'error');
     }
 }
 
@@ -475,10 +670,8 @@ function setupZoomControls() {
     }
 }
 
-function showNotification(message, type = 'info') {
-    // Simple notification - you can enhance this
-    alert(message);
-}
+// Modal-based showNotification is now provided by modal-utils.js
+// This legacy function is no longer needed
 
 function debounce(func, wait) {
     let timeout;
@@ -499,7 +692,7 @@ async function performAIAnalysis() {
         const jobDescFile = document.getElementById('jobDescFile')?.files[0];
 
         if (!jobDescText && !jobDescFile) {
-            showNotification('Please provide a job description to analyze against', 'error');
+            showNotificationModal('Please provide a job description to analyze against', 'error');
             return;
         }
 
@@ -507,6 +700,9 @@ async function performAIAnalysis() {
         const originalText = analyzeBtn.innerHTML;
         analyzeBtn.disabled = true;
         analyzeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
+
+        // Show progress modal
+        showProgressModal();
 
         updateScoreDisplay('analyzing', '--', 'Analyzing your resume...');
 
@@ -520,31 +716,61 @@ async function performAIAnalysis() {
             formData.append('job_description_file', jobDescFile);
         }
 
+        // Step 1: Extracting Text
+        setStepActive(1);
+        updateProgress(10, 'Extracting text from your resume...');
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Step 2: Analyzing Format
+        setStepActive(2);
+        updateProgress(25, 'Analyzing formatting and structure...');
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        // Step 3: Checking Keywords
+        setStepActive(3);
+        updateProgress(45, 'Checking keywords and terminology...');
+
         const response = await fetch('/ATS/api/analyze-ats-score.php', {
             method: 'POST',
             body: formData
         });
 
+        // Step 4: Evaluating Structure
+        setStepActive(4);
+        updateProgress(70, 'Evaluating content structure...');
+
         const result = await response.json();
 
-        if (result.success) {
-            const analysis = result.analysis || result;
-            const score = analysis.overall_score || analysis.score || 0;
-            updateScoreDisplay('success', score, getScoreLabel(score));
-            displaySuggestions(
-                analysis.improvements || [],
-                analysis.keywords_found || [],
-                analysis.keywords_missing || []
-            );
-            showNotification('Analysis complete!', 'success');
-        } else {
-            updateScoreDisplay('error', '--', 'Analysis failed');
-            showNotification('Error: ' + (result.message || 'Analysis failed'), 'error');
+        if (!result.success) {
+            throw new Error(result.message || 'Analysis failed');
         }
+
+        // Step 5: Generating Insights
+        setStepActive(5);
+        updateProgress(90, 'Generating personalized insights...');
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        // Complete
+        updateProgress(100, 'Analysis complete!');
+        await new Promise(resolve => setTimeout(resolve, 400));
+
+        // Hide progress modal
+        hideProgressModal();
+
+        const analysis = result.analysis || result;
+        const score = analysis.overall_score || analysis.score || 0;
+        updateScoreDisplay('success', score, getScoreLabel(score));
+        displaySuggestions(
+            analysis.improvements || [],
+            analysis.keywords_found || [],
+            analysis.keywords_missing || []
+        );
+        showNotificationModal('Analysis complete!', 'success');
     } catch (error) {
         console.error('Analysis error:', error);
+        hideProgressModal();
         updateScoreDisplay('error', '--', 'Analysis failed');
-        showNotification('Failed to analyze resume. Please try again.', 'error');
+        showNotificationModal('Error: ' + (error.message || 'Analysis failed'), 'error');
     } finally {
         const analyzeBtn = document.querySelector('.analyze-btn');
         analyzeBtn.disabled = false;

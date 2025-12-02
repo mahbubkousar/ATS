@@ -221,16 +221,16 @@ $resumeCount = count($resumes);
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css?v=16">
-    <link rel="stylesheet" href="css/dashboard.css?v=22">
+    <link rel="stylesheet" href="css/dashboard.css?v=25">
 </head>
 <body class="dashboard-body">
     <nav class="floating-nav">
         <div class="nav-content">
-            <a href="index.html" class="nav-logo" style="text-decoration: none;">ResumeSync</a>
+            <a href="index.php" class="nav-logo" style="text-decoration: none;">ResumeSync</a>
             <div class="nav-links">
                 <a href="dashboard.php" class="nav-link active">Dashboard</a>
                 <a href="score-checker.php" class="nav-link">ATS Checker</a>
-                <a href="about.html" class="nav-link">About</a>
+                <a href="ats-converter.php" class="nav-link">ATS Converter</a>
                 <button class="notification-icon" id="notificationBtn" aria-label="Notifications">
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge" id="notificationBadge" style="<?php echo $notificationCount > 0 ? '' : 'display: none;'; ?>"><?php echo $notificationCount; ?></span>
@@ -419,6 +419,9 @@ $resumeCount = count($resumes);
                                         <button class="btn-download btn-download-resume" data-resume-id="<?php echo $resume['resume_id']; ?>">
                                             <i class="fas fa-download"></i> Download
                                         </button>
+                                        <button class="btn-delete btn-delete-resume" data-resume-id="<?php echo $resume['resume_id']; ?>" data-resume-title="<?php echo htmlspecialchars($resume['resume_title']); ?>">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -469,6 +472,9 @@ $resumeCount = count($resumes);
                                     <button class="btn-share btn-share-resume" data-resume-id="<?php echo $resume['resume_id']; ?>">
                                         <i class="fas fa-share-alt"></i> Share
                                     </button>
+                                    <button class="btn-delete btn-delete-resume" data-resume-id="<?php echo $resume['resume_id']; ?>" data-resume-title="<?php echo htmlspecialchars($resume['resume_title']); ?>">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -486,50 +492,26 @@ $resumeCount = count($resumes);
                     <p class="section-description">Choose from professional ATS-friendly templates</p>
                 </header>
                 <div class="templates-grid">
-                    <div class="template-card" data-template="classic">
-                        <div class="template-badge featured">Most Popular</div>
-                        <div class="template-preview">
-                            <iframe src="templates/classic.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-header">
-                                <h3 class="template-name">Classic</h3>
-                                <div class="template-tags">
-                                    <span class="template-tag">ATS-Friendly</span>
-                                    <span class="template-tag">Traditional</span>
-                                </div>
-                            </div>
-                            <p class="template-description">Traditional format with clean lines and professional appearance. Perfect for conservative industries.</p>
-                            <div class="template-features">
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Clean Layout</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Easy to Read</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Universal</span>
-                            </div>
-                            <a href="editor.php?template=classic" class="btn-use-template" style="text-decoration: none;">
-                                <i class="fas fa-arrow-right"></i> Use This Template
-                            </a>
-                        </div>
-                    </div>
                     <div class="template-card" data-template="modern">
-                        <div class="template-badge new">Recommended</div>
+                        <div class="template-badge featured">Recommended</div>
                         <div class="template-preview">
                             <iframe src="templates/modern.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
                         </div>
                         <div class="template-info">
                             <div class="template-header">
-                                <h3 class="template-name">Modern</h3>
+                                <h3 class="template-name">Simple</h3>
                                 <div class="template-tags">
-                                    <span class="template-tag">Creative</span>
-                                    <span class="template-tag">Tech</span>
+                                    <span class="template-tag">ATS-Friendly</span>
+                                    <span class="template-tag">Clean</span>
                                 </div>
                             </div>
-                            <p class="template-description">Contemporary design with blue accents and clean typography. Ideal for tech and creative roles.</p>
+                            <p class="template-description">Clean, minimalist design with modern typography. Perfect for all industries and roles.</p>
                             <div class="template-features">
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Eye-Catching</span>
+                                <span class="template-feature"><i class="fas fa-check-circle"></i> Easy to Read</span>
                                 <span class="template-feature"><i class="fas fa-check-circle"></i> Modern Style</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Bold Colors</span>
+                                <span class="template-feature"><i class="fas fa-check-circle"></i> Universal</span>
                             </div>
-                            <a href="editor.php?template=modern" class="btn-use-template" style="text-decoration: none;">
+                            <a href="editor-modern.php" class="btn-use-template" style="text-decoration: none;">
                                 <i class="fas fa-arrow-right"></i> Use This Template
                             </a>
                         </div>
@@ -552,79 +534,7 @@ $resumeCount = count($resumes);
                                 <span class="template-feature"><i class="fas fa-check-circle"></i> Premium Look</span>
                                 <span class="template-feature"><i class="fas fa-check-circle"></i> Formal</span>
                             </div>
-                            <a href="editor.php?template=professional" class="btn-use-template" style="text-decoration: none;">
-                                <i class="fas fa-arrow-right"></i> Use This Template
-                            </a>
-                        </div>
-                    </div>
-                    <div class="template-card" data-template="executive">
-                        <div class="template-badge premium">Premium</div>
-                        <div class="template-preview">
-                            <iframe src="templates/executive.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-header">
-                                <h3 class="template-name">Executive</h3>
-                                <div class="template-tags">
-                                    <span class="template-tag">C-Suite</span>
-                                    <span class="template-tag">Leadership</span>
-                                </div>
-                            </div>
-                            <p class="template-description">Premium design for senior executives featuring key achievements section and wider margins for prestige.</p>
-                            <div class="template-features">
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Achievement-First</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Executive Style</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Premium Layout</span>
-                            </div>
-                            <a href="editor.php?template=executive" class="btn-use-template" style="text-decoration: none;">
-                                <i class="fas fa-arrow-right"></i> Use This Template
-                            </a>
-                        </div>
-                    </div>
-                    <div class="template-card" data-template="technical">
-                        <div class="template-badge new">New</div>
-                        <div class="template-preview">
-                            <iframe src="templates/technical.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-header">
-                                <h3 class="template-name">Technical</h3>
-                                <div class="template-tags">
-                                    <span class="template-tag">Software</span>
-                                    <span class="template-tag">Engineering</span>
-                                </div>
-                            </div>
-                            <p class="template-description">Two-column layout optimized for developers with dedicated projects section and categorized technical skills.</p>
-                            <div class="template-features">
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Projects Section</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Skill Categories</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Tech-Focused</span>
-                            </div>
-                            <a href="editor.php?template=technical" class="btn-use-template" style="text-decoration: none;">
-                                <i class="fas fa-arrow-right"></i> Use This Template
-                            </a>
-                        </div>
-                    </div>
-                    <div class="template-card" data-template="creative">
-                        <div class="template-badge new">New</div>
-                        <div class="template-preview">
-                            <iframe src="templates/creative.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-header">
-                                <h3 class="template-name">Creative Professional</h3>
-                                <div class="template-tags">
-                                    <span class="template-tag">Design</span>
-                                    <span class="template-tag">Marketing</span>
-                                </div>
-                            </div>
-                            <p class="template-description">Balanced design for UX/UI designers and marketers featuring portfolio highlights with subtle color accents.</p>
-                            <div class="template-features">
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Portfolio Section</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Color Blocking</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Modern Design</span>
-                            </div>
-                            <a href="editor.php?template=creative" class="btn-use-template" style="text-decoration: none;">
+                            <a href="editor-professional.php" class="btn-use-template" style="text-decoration: none;">
                                 <i class="fas fa-arrow-right"></i> Use This Template
                             </a>
                         </div>
@@ -636,7 +546,7 @@ $resumeCount = count($resumes);
                         </div>
                         <div class="template-info">
                             <div class="template-header">
-                                <h3 class="template-name">Academic Standard CV</h3>
+                                <h3 class="template-name">Academic</h3>
                                 <div class="template-tags">
                                     <span class="template-tag">PhD</span>
                                     <span class="template-tag">Faculty</span>
@@ -648,55 +558,7 @@ $resumeCount = count($resumes);
                                 <span class="template-feature"><i class="fas fa-check-circle"></i> Grants & Funding</span>
                                 <span class="template-feature"><i class="fas fa-check-circle"></i> References Included</span>
                             </div>
-                            <a href="editor.php?template=academic-standard" class="btn-use-template" style="text-decoration: none;">
-                                <i class="fas fa-arrow-right"></i> Use This Template
-                            </a>
-                        </div>
-                    </div>
-                    <div class="template-card" data-template="research-scientist">
-                        <div class="template-badge academic">Academic</div>
-                        <div class="template-preview">
-                            <iframe src="templates/research-scientist.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-header">
-                                <h3 class="template-name">Research Scientist CV</h3>
-                                <div class="template-tags">
-                                    <span class="template-tag">STEM</span>
-                                    <span class="template-tag">Research</span>
-                                </div>
-                            </div>
-                            <p class="template-description">STEM-focused CV for research positions and grant applications (NSF/NIH). Features research metrics and technical expertise.</p>
-                            <div class="template-features">
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Research Metrics</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Technical Skills</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Funding Totals</span>
-                            </div>
-                            <a href="editor.php?template=research-scientist" class="btn-use-template" style="text-decoration: none;">
-                                <i class="fas fa-arrow-right"></i> Use This Template
-                            </a>
-                        </div>
-                    </div>
-                    <div class="template-card" data-template="teaching-faculty">
-                        <div class="template-badge academic">Academic</div>
-                        <div class="template-preview">
-                            <iframe src="templates/teaching-faculty.html?v=3" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.85); transform-origin: top center;"></iframe>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-header">
-                                <h3 class="template-name">Teaching-Focused Faculty CV</h3>
-                                <div class="template-tags">
-                                    <span class="template-tag">Teaching</span>
-                                    <span class="template-tag">Liberal Arts</span>
-                                </div>
-                            </div>
-                            <p class="template-description">CV optimized for teaching-intensive positions. Emphasizes pedagogy, curriculum development, and student mentoring.</p>
-                            <div class="template-features">
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Teaching First</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Course Listings</span>
-                                <span class="template-feature"><i class="fas fa-check-circle"></i> Student Success</span>
-                            </div>
-                            <a href="editor.php?template=teaching-faculty" class="btn-use-template" style="text-decoration: none;">
+                            <a href="editor-academic-standard.php" class="btn-use-template" style="text-decoration: none;">
                                 <i class="fas fa-arrow-right"></i> Use This Template
                             </a>
                         </div>
@@ -1351,10 +1213,41 @@ $resumeCount = count($resumes);
         </div>
     </div>
 
+    <!-- MODALS -->
+    <!-- Notification Modal -->
+    <div class="modal-overlay" id="notificationModal" style="display: none;">
+        <div class="notification-modal" id="notificationModalContent">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 id="notificationTitle">Success</h3>
+            <p id="notificationMessage">Operation completed successfully</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" id="notificationOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmationModal" style="display: none;">
+        <div class="notification-modal warning" id="confirmationModalContent">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 id="confirmationTitle">Confirm Action</h3>
+            <p id="confirmationMessage">Are you sure you want to proceed?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" id="confirmationCancelBtn">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="confirmationOkBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/modal-utils.js?v=5"></script>
     <script src="js/app.js?v=14"></script>
-    <script src="js/dashboard.js?v=17"></script>
+    <script src="js/dashboard.js?v=19"></script>
     <script src="js/profile-manager.js?v=14"></script>
     <script src="js/application-tracker.js?v=3"></script>
     <script src="js/timeline-handler.js?v=1"></script>
